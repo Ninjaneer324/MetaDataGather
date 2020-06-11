@@ -38,5 +38,6 @@ for e in periodic_table:
                 author_full = ",\"" + docs[i]['pnx']['sort']['author'][0] + "\""
                 result += date + author_full
             worksheet.write(row, i + 1, result)
+            #commit something
     row += 1
 workbook.close()
