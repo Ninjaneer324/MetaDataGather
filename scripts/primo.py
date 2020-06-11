@@ -16,12 +16,13 @@ apikey = 'l8xx76578ee844b74663a3cbe3b6bb3dd316'
 
 url = "https://api-na.hosted.exlibrisgroup.com/primo/v1/search"
 
-periodic_table = []
+periodic_table = ["cloud comput*", "artificial intelligence","machine learning",]
 workbook = xlsxwriter.Workbook("output.xlsx")
 worksheet = workbook.add_worksheet()
 row = 0
 for e in periodic_table:
-    q = 'any,contains,precipitat*,AND;any,contains,' + e
+    #q = 'any,contains,precipitat*,AND;any,contains,' + e
+    q="any,contains," + e
     #does the hard work of adding queries for you
     response = requests.get(url, params={'vid':vid, 'tab': tab, 'scope':scope,'q':q,'limit':100,'inst':inst,'apikey':apikey})
     full_response = response.json()
