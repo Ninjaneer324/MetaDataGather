@@ -1,5 +1,4 @@
 import requests
-import xlsxwriter
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 url = "https://api.elsevier.com/content/search/scopus"
 query = ""
@@ -7,7 +6,14 @@ query = ""
 periodic_table = {"aluminum":"Al"}
 for i in periodic_table:
     query = "(" + i + " OR " + periodic_table[i] + ") AND (precipitat* OR age)"
-    print(query)
-    response = requests.get(url, params={"apiKey":apiKey, "query":query, "count":25})
-    g = response.json()
-    print(g)
+    response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "query":query, "count":25})
+    results = response.json()['search-results']['entry']
+    abstracts = {}
+    for i in results:
+        colon = i['dc:identifier'].find(':')
+        scopus_id = i['dc:identifier'][colon + 1:]
+        scopus_abstract = "https://api.elsevier.com/content/abstract/scopus_id/" + scopus_id
+        res_l = requests.get(scopus_abstract, params={"httpAccept":"application/json","apiKey":apiKey,"view":"META"})
+        result_l = res_l.json()
+        print(result_l)
+        break
