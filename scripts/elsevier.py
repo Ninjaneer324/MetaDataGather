@@ -4,7 +4,7 @@ apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 url = "https://api.elsevier.com/content/search/sciencedirect"
 query = ""
 #default unavailable to have all access; need to email; limit in count number varies
-periodic_table = {"aluminum":"Al"}
+periodic_table = {"aluminum":"Al","iron":"Fe"}
 excel_workbook = xlsxwriter.Workbook('Elsevier.xlsx')
 worksheet = excel_workbook.add_worksheet()
 worksheet.write(0,0,"Query Format")
@@ -46,6 +46,6 @@ for i in periodic_table:
         if len(missing_information[i]) > 0:
             worksheet.write(row, int(i), str(missing_information[i]))
     missing_information.clear()
-    row+=1
+    row+=2
     
 excel_workbook.close()
