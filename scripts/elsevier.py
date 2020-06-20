@@ -8,7 +8,7 @@ periodic_table = {"aluminum":"Al","iron":"Fe"}
 excel_workbook = xlsxwriter.Workbook('Elsevier.xlsx')
 worksheet = excel_workbook.add_worksheet()
 worksheet.write(0,0,"Query Format")
-worksheet.write(0, 1, "(<element> OR <element_symbol>) AND ((precipitat* OR age) harden*)")
+worksheet.write(0, 1, "(<element> OR <element_symbol>) AND ((precipitat OR age) harden)")
 row = 1
 missing_information = {}
 for i in periodic_table:
