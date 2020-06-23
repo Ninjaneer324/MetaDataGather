@@ -1,0 +1,1 @@
+((<base_element> OR <symbol>) AND (<alloy> OR <symbol>)) AND (precipitat* AND (age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)
