@@ -2,10 +2,12 @@ import requests
 import xlsxwriter
 #api key for authentication
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
+#or is it the insttoken?
+#API Documentation for Engineering Village search: https://dev.elsevier.com/documentation/EngineeringVillageAPI.wadl
 access_token = ""
 #endpoint for search
-url = "https://api.elsevier.com/content/search/sciencedirect"
-#url = "https://api.elsevier.com/content/ev/results"
+#url = "https://api.elsevier.com/content/search/sciencedirect"
+url = "https://api.elsevier.com/content/ev/results"
 query = ""
 #The list of elements/alloys we intend to query
 periodic_table = {}
@@ -27,7 +29,7 @@ for i in periodic_table:
     #formats query for each element in the "periodic table"
     query = "(" + i + " OR " + periodic_table[i] + ") AND ((precipitat* OR age) harden*)"
     #requests for search results
-    response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "query":query, "count":100})
+    response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "access_token":access_token,"query":query})
     results = response.json()['search-results']['entry']
     #writes what element is currently being queried into worksheet
     worksheet.write(row, 0, periodic_table[i])
