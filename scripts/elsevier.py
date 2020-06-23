@@ -8,7 +8,8 @@ url = "https://api.elsevier.com/content/search/sciencedirect"
 #url = "https://api.elsevier.com/content/ev/results"
 query = ""
 #The list of elements/alloys we intend to query
-periodic_table = {"aluminum":"Al-*","iron":"Fe"}
+periodic_table = {}
+query_list = {}
 #will this handle alloys with different names such as Nichrome or steel?
 #open exccel workbook
 excel_workbook = xlsxwriter.Workbook('Elsevier.xlsx')
