@@ -35,14 +35,14 @@ for elem in periodic_table:
     #formats query for each element in the "periodic table"
     if len(periodic_table[elem]['alloys']) == 0:
         print(elem)
-        print("continued")
+        print("continued\n")
         continue
     alloys = periodic_table[elem]['alloys'].split(', ')
     for a in alloys:
         query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
         print(query)
         
-        #requests for search results
+        '''#requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "access_token":access_token,"query":query})
         results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
@@ -87,4 +87,5 @@ for elem in periodic_table:
         row+=2
     row+=1
 #close workbook'''
+    print()
 excel_workbook.close()
