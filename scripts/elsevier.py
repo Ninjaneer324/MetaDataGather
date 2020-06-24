@@ -46,7 +46,7 @@ for elem in periodic_table:
     alloys = periodic_table[elem]['alloys'].split(', ')
     for a in alloys:
         query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
-        
+        print(query)
         #requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "access_token":access_token,"query":query})
         results = response.json()['search-results']['entry']
