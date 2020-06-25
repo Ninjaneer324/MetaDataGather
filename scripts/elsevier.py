@@ -7,8 +7,8 @@ apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #API Documentation for Engineering Village search: https://dev.elsevier.com/documentation/EngineeringVillageAPI.wadl
 access_token = ""
 #endpoint for search
-#url = "https://api.elsevier.com/content/search/sciencedirect"
-url = "https://api.elsevier.com/content/ev/results"
+url = "https://api.elsevier.com/content/search/sciencedirect"
+#url = "https://api.elsevier.com/content/ev/results"
 query = ""
 #The list of elements/alloys we intend to query
 
