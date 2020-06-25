@@ -14,7 +14,7 @@ query = ""
 
 
 periodic_table = {}
-periodic_wb = xlrd.open_workbook("~/Documents/MetaDataGather/Period LIST.xlsx")
+periodic_wb = xlrd.open_workbook("Period LIST.xlsx")
 sheet = periodic_wb.sheet_by_index(0)
 for i in range(1, 96):
     contents = {}
