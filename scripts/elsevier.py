@@ -25,7 +25,7 @@ for i in range(1, 96):
 
 
 #open exccel workbook
-excel_workbook = xlsxwriter.Workbook('Elsevier.xlsx')
+excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
@@ -44,17 +44,17 @@ row = 4
 for elem in periodic_table:
     #formats query for each element in the "periodic table"
     if len(periodic_table[elem]['alloys']) == 0:
-        print(elem)
-        print("continued\n")
         continue
     alloys = periodic_table[elem]['alloys'].split(', ')
     for a in alloys:
-        query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
+        #query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
+        query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
-        '''#requests for search results
-        response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "access_token":access_token,"query":query})
-        results = response.json()['search-results']['entry']
+        #requests for search results
+        response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey,"query":query,"count":100})
+        print(response.status_code)
+        '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
         for r in results:
@@ -90,6 +90,7 @@ for elem in periodic_table:
             else:
                 worksheet.write(row,5,"Missing")
             row += 1
+            break
         row+=1
 #close workbook'''
     print()
