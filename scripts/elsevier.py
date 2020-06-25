@@ -14,7 +14,7 @@ query = ""
 
 
 periodic_table = {}
-periodic_wb = xlrd.open_workbook("/home/ninjaneer324/Documents/MetaDataGather/Period LIST.xlsx")
+periodic_wb = xlrd.open_workbook("~/Documents/MetaDataGather/Period LIST.xlsx")
 sheet = periodic_wb.sheet_by_index(0)
 for i in range(1, 96):
     contents = {}
@@ -52,7 +52,7 @@ for elem in periodic_table:
         query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
-        #requests for search results
+        '''#requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey, "access_token":access_token,"query":query})
         results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
