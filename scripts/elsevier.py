@@ -1,6 +1,7 @@
 import requests
 import xlsxwriter
 import xlrd
+import time
 #api key for authentication
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -54,6 +55,7 @@ for elem in periodic_table:
         #requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey,"query":query,"count":100})
         print(response.status_code)
+        time.sleep(5)
         '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
