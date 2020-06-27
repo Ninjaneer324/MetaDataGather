@@ -24,12 +24,14 @@ for i in range(1, 96):
     periodic_table[sheet.cell_value(i, 2)] = contents
 #will this handle alloys with different names such as Nichrome or steel?
 
-
+print("Excel Book Opening...\n")
 #open exccel workbook
 excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
+print("Excel Book Opened and Worksheet added\n")
 #First 2 rows will detail what query format I applied
+print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
 worksheet.write(0, 1, "(((<base_element> OR <symbol>) AND (<alloy> OR <symbol>)) AND (precipitat* AND (age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)")
 worksheet.write(2,1,"DOI/ID")
@@ -38,6 +40,8 @@ worksheet.write(2,3,"Author")
 worksheet.write(2,4,"Cover Date")
 worksheet.write(2,5,"Load Date")
 
+print("Begin Mass Query...\n")
+print("Loading...\n\n")
 #query portion
 row = 4
 #will hold metadata that will say what information that might be missing from each query
@@ -54,8 +58,8 @@ for elem in periodic_table:
         #requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey,"query":query,"count":100})
         print(response.status_code)
-        time.sleep(5)
-        '''results = response.json()['search-results']['entry']
+        
+        results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
         for r in results:
@@ -91,8 +95,9 @@ for elem in periodic_table:
             else:
                 worksheet.write(row,5,"Missing")
             row += 1
-            break
+            time.sleep(5)
         row+=1
 #close workbook'''
-    print()
+
+print("Closing Workbook...")
 excel_workbook.close()
