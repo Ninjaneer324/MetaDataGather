@@ -8,6 +8,7 @@ apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #API Documentation for Engineering Village search: https://dev.elsevier.com/documentation/EngineeringVillageAPI.wadl
 access_token = ""
 #endpoint for search
+headers = {"Accept":"application/json","X-ELS-APIKey":apiKey, "X-ELS-Insttoken":access_token}
 url = "https://api.elsevier.com/content/search/sciencedirect"
 #url = "https://api.elsevier.com/content/ev/results"
 query = ""
@@ -57,12 +58,12 @@ for elem in periodic_table:
         query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
         #query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
-        #print(query)
+        print(query)
         #requests for search results
-        response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey,"query":query,"count":100})
-        #print(response.status_code)
-        
-        results = response.json()['search-results']['entry']
+        response = requests.get(url, headers=headers,params={"insttoken":apiKey, "query":query, "count":100}) #engineering village doesn't have count
+        print(response.status_code)
+        time.sleep(5)
+        '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
         for r in results:
