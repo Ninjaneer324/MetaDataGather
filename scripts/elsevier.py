@@ -31,8 +31,7 @@ excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
 worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
 worksheet.write(0,0,"Query Format")
-worksheet.write(0, 1, "(((<base_element> OR <symbol>) AND (<alloy> OR <symbol>)) AND (precipitat* AND "+
-"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)")
+worksheet.write(0, 1, "(((<base_element> OR <symbol>) AND (<alloy> OR <symbol>)) AND (precipitat* AND (age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)")
 worksheet.write(2,1,"DOI/ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
