@@ -24,16 +24,15 @@ for i in range(1, 96):
     periodic_table[sheet.cell_value(i, 2)] = contents
 #will this handle alloys with different names such as Nichrome or steel?
 
-print("Excel Book Opening...\n")
+print("Excel Book Opening and adding work sheet...\n")
 #open exccel workbook
 excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
-print("Excel Book Opened and Worksheet added\n")
 #First 2 rows will detail what query format I applied
 print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
-worksheet.write(0, 1, "(((<base_element> OR <symbol>) AND (<alloy> OR <symbol>)) AND (precipitat* AND (age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)")
+worksheet.write(0, 1, "((base_element OR symbol) AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))")
 worksheet.write(2,1,"DOI/ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
@@ -51,13 +50,17 @@ for elem in periodic_table:
         continue
     alloys = periodic_table[elem]['alloys'].split(', ')
     for a in alloys:
-        #query = "((("+periodic_table[elem]['name']+" OR "+elem+") AND ("+periodic_table[a]['name']+" OR "+a+")) AND (precipitat* AND "+"(age* OR transform* OR microscop*))) NOT (aqueous OR bio* OR disease*)"
-        query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
+        base_element = periodic_table[elem]['name']
+        base_symbol = elem
+        alloy_element = periodic_table[a]['name']
+        alloy_symbol = a
+        query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
+        #query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
-        print(query)
+        #print(query)
         #requests for search results
         response = requests.get(url, params={"httpAccept":"application/json","apiKey":apiKey,"query":query,"count":100})
-        print(response.status_code)
+        #print(response.status_code)
         
         results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
