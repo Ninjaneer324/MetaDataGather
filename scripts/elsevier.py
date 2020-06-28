@@ -33,7 +33,7 @@ worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
 print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
-worksheet.write(0, 1, "((base_element OR symbol) AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))")
+worksheet.write(0, 1, "(base_element OR symbol) AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))")
 worksheet.write(2,1,"DOI/ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
