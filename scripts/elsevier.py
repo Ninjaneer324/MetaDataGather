@@ -43,7 +43,7 @@ worksheet.write(2,5,"Load Date")
 print("Begin Mass Query...\n")
 print("Loading...\n\n")
 #query portion
-row = 4
+row = 3
 #will hold metadata that will say what information that might be missing from each query
 for elem in periodic_table:
     #formats query for each element in the "periodic table"
