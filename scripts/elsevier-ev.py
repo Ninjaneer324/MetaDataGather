@@ -6,12 +6,11 @@ import time
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
 #API Documentation for Engineering Village search: https://dev.elsevier.com/documentation/EngineeringVillageAPI.wadl
-access_token = ""
+access_token = "4f3d2a4d46c51cbb68e83cf0b7150f45"
 #endpoint for search
 headers = {"Accept":"application/json","X-ELS-APIKey":apiKey, "X-ELS-Insttoken":access_token}
-url = "https://api.elsevier.com/content/search/sciencedirect"
-#url = "https://api.elsevier.com/content/ev/results"
-query = ""
+#url = "https://api.elsevier.com/content/search/sciencedirect"
+url = "https://api.elsevier.com/content/ev/results"
 #The list of elements/alloys we intend to query
 
 
@@ -34,7 +33,7 @@ worksheet = excel_workbook.add_worksheet()
 print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
 worksheet.write(0, 1, "(base_element OR symbol) AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))")
-worksheet.write(2,1,"DOI/ID")
+worksheet.write(2,1,"ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
 worksheet.write(2,4,"Cover Date")
@@ -60,9 +59,9 @@ for elem in periodic_table:
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
         #requests for search results
-        response = requests.get(url, headers=headers,params={"insttoken":apiKey, "query":query, "count":100}) #engineering village doesn't have count
+        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100}) #engineering village doesn't have count
         print(response.status_code)
-        time.sleep(5)
+        exit()
         '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
