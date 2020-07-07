@@ -26,7 +26,7 @@ for i in range(1, 96):
 
 print("Excel Book Opening and adding work sheet...\n")
 #open exccel workbook
-excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
+excel_workbook = xlsxwriter.Workbook('EngineeringVillage.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
@@ -36,8 +36,7 @@ worksheet.write(0, 1, "(base_element OR symbol) AND (alloy_element OR symbol) AN
 worksheet.write(2,1,"ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
-worksheet.write(2,4,"Cover Date")
-worksheet.write(2,5,"Load Date")
+worksheet.write(2,4, "Date")
 
 print("Begin Mass Query...\n")
 print("Loading...\n\n")
@@ -61,7 +60,41 @@ for elem in periodic_table:
         #requests for search results
         response = requests.get(url, headers=headers,params={"query":query,"pageSize":100}) #engineering village doesn't have count
         print(response.status_code)
-        exit()
+        results = response.json()
+        for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
+            if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
+                if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
+                        worksheet.write(row, 1, id)
+                else:
+                    worksheet.write(row, 1, "missing")
+                    
+                if 'TI' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                    title = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                    worksheet.write(row, 2, title)
+                else:
+                    worksheet.write(row, 2, "missing")
+                    
+                if 'SD' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                    date = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['SD']
+                    worksheet.write(row, 4, date)
+                else:
+                    worksheet.write(row,4,"missing")
+            else:
+                worksheet.write(row, 1, "missing")
+                worksheet.write(row, 2, "missing")
+                worksheet.write(row,4,"missing")
+
+            if 'AUS' in item['EI-DOCUMENT'] and 'AU' in item['EI-DOCUMENT']['AUS']:
+                s = ""
+                for i in range(len(item['EI-DOCUMENT']['AUS']['AU'])):
+                    s += item['EI-DOCUMENT']['AUS']['AU'][i]['NAME']
+                    if i != len(item['EI-DOCUMENT']['AUS']['AU']) - 1:
+                        s += ";"
+                worksheet.write(row, 3, s)
+            else:
+                worksheet.write(row, 3, "missing")
+            row += 1
         '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
@@ -101,6 +134,8 @@ for elem in periodic_table:
             time.sleep(5)
         row+=1
 #close workbook'''
+        break
+    break
 
 print("Closing Workbook...")
 excel_workbook.close()
