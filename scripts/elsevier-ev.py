@@ -2,6 +2,7 @@ import requests
 import xlsxwriter
 import xlrd
 import time
+from urllib.parse import unquote
 #api key for authentication
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -58,14 +59,16 @@ for elem in periodic_table:
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
         #requests for search results
-        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100}) #engineering village doesn't have count
+        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c"}) #engineering village doesn't have count
         print(response.status_code)
         results = response.json()
         for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
             if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
+                ids = {}
                 if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
-                        id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
-                        worksheet.write(row, 1, id)
+                    id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
+                    ids['DOI'] = id
+                    worksheet.write(row, 1, str(ids))
                 else:
                     worksheet.write(row, 1, "missing")
                     
@@ -94,7 +97,17 @@ for elem in periodic_table:
                 worksheet.write(row, 3, s)
             else:
                 worksheet.write(row, 3, "missing")
+            
+            if 'DOI' not in ids and 'DOCUMENTOBJECTS' in item['EI-DOCUMENT'] and 'CITEDBY' in item['EI-DOCUMENT']['DOCUMENTOBJECTS'] and 'DOI' in item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']:
+                id = unquote(item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']['DOI'])
+                ids['DOI'] = id
+                worksheet.write(row, 1, str(ids))
+            elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
+                id = item['EI-DOCUMENT']['DOC']['DOC-ID']
+                ids['DOC-ID'] = id
+                worksheet.write(row, 1, str(ids))
             row += 1
+        time.sleep(2)
         '''results = response.json()['search-results']['entry']
         #writes what element is currently being queried into worksheet
         worksheet.write(row, 0, elem + "-" +a)
@@ -134,8 +147,7 @@ for elem in periodic_table:
             time.sleep(5)
         row+=1
 #close workbook'''
-        break
-    break
+        row += 1
 
 print("Closing Workbook...")
 excel_workbook.close()
