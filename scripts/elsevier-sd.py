@@ -1,8 +1,8 @@
+ 
 import requests
 import xlsxwriter
 import xlrd
 import time
-from urllib.parse import unquote
 #api key for authentication
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -10,7 +10,7 @@ apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 access_token = "4f3d2a4d46c51cbb68e83cf0b7150f45"
 #endpoint for search
 headers = {"Accept":"application/json","X-ELS-APIKey":apiKey, "X-ELS-Insttoken":access_token}
-url = "https://api.elsevier.com/content/ev/results"
+url = "https://api.elsevier.com/content/search/sciencedirect"
 #The list of elements/alloys we intend to query
 
 
@@ -26,7 +26,7 @@ for i in range(1, 96):
 
 print("Excel Book Opening and adding work sheet...\n")
 #open exccel workbook
-excel_workbook = xlsxwriter.Workbook('EngineeringVillage.xlsx')
+excel_workbook = xlsxwriter.Workbook('ScienceDirect.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
@@ -58,61 +58,48 @@ for elem in periodic_table:
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
         #requests for search results
-        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c"}) #engineering village doesn't have count
+        response = requests.get(url, headers=headers,params={"query":query,"count":200}) #engineering village doesn't have count
         print(response.status_code)
         if response.status_code != 200:
             print("Error: HTTP", response.status_code)
             print("Closing Workbook...")
             excel_workbook.close()
-        results = response.json()
-        for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
-            if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
-                ids = {}
-                if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
-                    id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
-                    ids['DOI'] = id
-                    worksheet.write(row, 1, str(ids))
-                else:
-                    worksheet.write(row, 1, "missing")
-                    
-                if 'TI' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
-                    title = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
-                    worksheet.write(row, 2, title)
-                else:
-                    worksheet.write(row, 2, "missing")
-                    
-                if 'SD' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
-                    date = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['SD']
-                    worksheet.write(row, 4, date)
-                else:
-                    worksheet.write(row,4,"missing")
+        results = response.json()['search-results']['entry']
+        #writes what element is currently being queried into worksheet
+        worksheet.write(row, 0, elem + "-" +a)
+        for r in results:
+            #checks that said meta data exists and writes it to the excel spread sheet cell if it does and 
+            #to the missing information row if it doesn't
+            if 'dc:identifier' in r:
+                id = r['dc:identifier']
+                worksheet.write(row, 1, id)
             else:
-                worksheet.write(row, 1, "missing")
-                worksheet.write(row, 2, "missing")
-                worksheet.write(row,4,"missing")
-
-            if 'AUS' in item['EI-DOCUMENT'] and 'AU' in item['EI-DOCUMENT']['AUS']:
-                s = ""
-                for i in range(len(item['EI-DOCUMENT']['AUS']['AU'])):
-                    s += item['EI-DOCUMENT']['AUS']['AU'][i]['NAME']
-                    if i != len(item['EI-DOCUMENT']['AUS']['AU']) - 1:
-                        s += ";"
-                worksheet.write(row, 3, s)
+                worksheet.write(row,1,"Missing")
+            if 'dc:title' in r:
+                title = r['dc:title']
+                worksheet.write(row, 2, title)
             else:
-                worksheet.write(row, 3, "missing")
+                worksheet.write(row, 2, "Missing")
             
-            if 'DOI' not in ids and 'DOCUMENTOBJECTS' in item['EI-DOCUMENT'] and 'CITEDBY' in item['EI-DOCUMENT']['DOCUMENTOBJECTS'] and 'DOI' in item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']:
-                id = unquote(item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']['DOI'])
-                ids['DOI'] = id
-                worksheet.write(row, 1, str(ids))
-            elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
-                id = item['EI-DOCUMENT']['DOC']['DOC-ID']
-                ids['DOC-ID'] = id
-                worksheet.write(row, 1, str(ids))
+            if 'dc:creator' in r:
+                creator = r['dc:creator']
+                worksheet.write(row, 3, creator)
+            else:
+                missing.write(row, 3, "Missing")
+                
+            if 'prism:coverDate' in r:
+                coverDate = r['prism:coverDate']
+                worksheet.write(row, 4, coverDate)
+            else:
+                worksheet.write(row,4,"Missing")
+                
+            if 'load-date' in r:
+                load_date = r['load-date']
+                worksheet.write(row, 5, load_date)
+            else:
+                worksheet.write(row,5,"Missing")
             row += 1
         time.sleep(2)
-#close workbook'''
         row += 1
-
 print("Closing Workbook...")
 excel_workbook.close()
