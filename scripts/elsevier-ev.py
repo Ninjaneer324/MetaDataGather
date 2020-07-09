@@ -59,12 +59,14 @@ for elem in periodic_table:
         print(query)
         #requests for search results
         response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c"}) #engineering village doesn't have count
-        print(response.status_code)
         if response.status_code != 200:
             print("Error: HTTP", response.status_code)
             print("Closing Workbook...")
             excel_workbook.close()
+            exit()
+        print(response.status_code)
         results = response.json()
+        worksheet.write(row + 1, 0, "Total: " + str(results['PAGE']['RESULTS-COUNT']))
         for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
             if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                 ids = {}
