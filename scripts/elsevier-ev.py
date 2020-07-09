@@ -12,7 +12,7 @@ inst_token = "4f3d2a4d46c51cbb68e83cf0b7150f45"
 headers = {"Accept":"application/json","X-ELS-APIKey":apiKey, "X-ELS-Insttoken":inst_token}
 url = "https://api.elsevier.com/content/ev/results"
 #The list of elements/alloys we intend to query
-
+total_searches = 0
 
 periodic_table = {}
 periodic_wb = xlrd.open_workbook("Periodic-Table.xlsx")
@@ -113,8 +113,10 @@ for elem in periodic_table:
                 worksheet.write(row, 1, str(ids))
             row += 1
         time.sleep(2)
+        total_searches += 1
 #close workbook'''
         row += 1
 
 print("Closing Workbook...")
+print(total_searches, " Total Searches")
 excel_workbook.close()
