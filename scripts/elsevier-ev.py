@@ -3,6 +3,7 @@ import xlsxwriter
 import xlrd
 import time
 from urllib.parse import unquote
+from math import ceil
 #api key for authentication
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -59,14 +60,17 @@ for elem in periodic_table:
         print(query)
         #requests for search results
         response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c"}) #engineering village doesn't have count
+        print("Page 1",response.status_code)
         if response.status_code != 200:
             print("Error: HTTP", response.status_code)
             print("Closing Workbook...")
             excel_workbook.close()
             exit()
-        print(response.status_code)
+
+        #first page of results
         results = response.json()
-        worksheet.write(row + 1, 0, "Total: " + str(results['PAGE']['RESULTS-COUNT']))
+        total_results = results['PAGE']['RESULTS-COUNT']
+        worksheet.write(row + 1, 0, "Total: " + str(total_results))
         for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
             if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                 ids = {}
@@ -113,10 +117,68 @@ for elem in periodic_table:
                 worksheet.write(row, 1, str(ids))
             row += 1
         time.sleep(2)
-        total_searches += 1
+
+
+        #next 8 pages if any
+        pages = min(8, ceil(total_results / 100))
+        for i in range(1, pages):
+            response = requests.get(url, headers=headers,params={"query":query,"offset":i,"pageSize":100,"database":"c"}) #engineering village doesn't have count
+            print("Page",i + 1,response.status_code)
+            if response.status_code != 200:
+                print("Error: HTTP", response.status_code)
+                print("Closing Workbook...")
+                excel_workbook.close()
+                exit()
+
+            results = response.json()
+            for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
+                if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
+                    ids = {}
+                    if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
+                        ids['DOI'] = id
+                        worksheet.write(row, 1, str(ids))
+                    else:
+                        worksheet.write(row, 1, "missing")
+                        
+                    if 'TI' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        title = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                        worksheet.write(row, 2, title)
+                    else:
+                        worksheet.write(row, 2, "missing")
+                        
+                    if 'SD' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        date = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['SD']
+                        worksheet.write(row, 4, date)
+                    else:
+                        worksheet.write(row,4,"missing")
+                else:
+                    worksheet.write(row, 1, "missing")
+                    worksheet.write(row, 2, "missing")
+                    worksheet.write(row,4,"missing")
+
+                if 'AUS' in item['EI-DOCUMENT'] and 'AU' in item['EI-DOCUMENT']['AUS']:
+                    s = ""
+                    for i in range(len(item['EI-DOCUMENT']['AUS']['AU'])):
+                        s += item['EI-DOCUMENT']['AUS']['AU'][i]['NAME']
+                        if i != len(item['EI-DOCUMENT']['AUS']['AU']) - 1:
+                            s += ";"
+                    worksheet.write(row, 3, s)
+                else:
+                    worksheet.write(row, 3, "missing")
+                
+                if 'DOI' not in ids and 'DOCUMENTOBJECTS' in item['EI-DOCUMENT'] and 'CITEDBY' in item['EI-DOCUMENT']['DOCUMENTOBJECTS'] and 'DOI' in item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']:
+                    id = unquote(item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']['DOI'])
+                    ids['DOI'] = id
+                    worksheet.write(row, 1, str(ids))
+                elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
+                    id = item['EI-DOCUMENT']['DOC']['DOC-ID']
+                    ids['DOC-ID'] = id
+                    worksheet.write(row, 1, str(ids))
+                row += 1
+            time.sleep(2)
 #close workbook'''
         row += 1
 
 print("Closing Workbook...")
-print(total_searches, " Total Searches")
 excel_workbook.close()
