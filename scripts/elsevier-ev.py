@@ -38,7 +38,7 @@ worksheet.write(2,1,"ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
 worksheet.write(2,4, "Date")
-
+doc_id_file = open("doc_ids.txt","w")
 print("Begin Mass Query...\n")
 print("Loading...\n\n")
 #query portion
@@ -55,9 +55,11 @@ for elem in periodic_table:
         alloy_element = periodic_table[a]['name']
         alloy_symbol = a
         query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
-        query += " NOT (biol* OR diseas* OR cancer OR aqueous)"
+        query += " NOT (biol* OR diseas* OR cancer OR aqueous*)"
         if base_element.lower() != "iron" or alloy_element.lower() != "iron":
             query += " NOT (steel)"
+        if base_element.lower() == "calcium" and alloy_element.lower() == "neodymium":
+            query += " NOT (mag* OR laser)"
         #query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
@@ -68,6 +70,7 @@ for elem in periodic_table:
             print("Error: HTTP", response.status_code)
             print("Closing Workbook...")
             excel_workbook.close()
+            doc_id_file.close()
             exit()
 
         #first page of results
@@ -117,6 +120,7 @@ for elem in periodic_table:
             elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
                 id = item['EI-DOCUMENT']['DOC']['DOC-ID']
                 ids['DOC-ID'] = id
+                doc_id_file.write(elem+"-"+a+"\t"+id+"\n")
                 worksheet.write(row, 1, str(ids))
             row += 1
         time.sleep(2)
@@ -131,6 +135,7 @@ for elem in periodic_table:
                 print("Error: HTTP", response.status_code)
                 print("Closing Workbook...")
                 excel_workbook.close()
+                doc_id_file.close()
                 exit()
 
             results = response.json()
@@ -177,6 +182,7 @@ for elem in periodic_table:
                 elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
                     id = item['EI-DOCUMENT']['DOC']['DOC-ID']
                     ids['DOC-ID'] = id
+                    doc_id_file.write(elem+"-"+a+"\t"+id+"\n")
                     worksheet.write(row, 1, str(ids))
                 row += 1
             time.sleep(2)
@@ -185,3 +191,4 @@ for elem in periodic_table:
 
 print("Closing Workbook...")
 excel_workbook.close()
+doc_id_file.close()
