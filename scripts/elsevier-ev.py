@@ -59,7 +59,7 @@ for elem in periodic_table:
         if base_element.lower() != "iron" or alloy_element.lower() != "iron":
             query += " NOT (steel)"
         if base_element.lower() == "calcium" and alloy_element.lower() == "neodymium":
-            query += " NOT (mag* OR laser)"
+            query += " NOT (Magnesium OR \"Mg\" OR ceramic OR laser)"
         #query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
