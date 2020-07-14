@@ -33,7 +33,7 @@ worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
 print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
-worksheet.write(0, 1, "(base_element OR symbol) AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))")
+worksheet.write(0, 1, "\" base_symbol-*\" AND \"-*alloy_symbol\" AND (alloy_element OR symbol) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous*)")
 worksheet.write(2,1,"ID")
 worksheet.write(2,2,"Title")
 worksheet.write(2,3,"Author")
@@ -55,7 +55,8 @@ for elem in periodic_table:
         alloy_element = periodic_table[a]['name']
         alloy_symbol = a
         query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
-        query += " NOT (biol* OR diseas* OR cancer OR aqueous*)"
+        #query = "\" "+base_symbol+"-*\" AND \"-*"+alloy_symbol+"\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
+        query += " NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic)"
         if base_element.lower() != "iron" or alloy_element.lower() != "iron":
             query += " NOT (steel)"
         if base_element.lower() == "calcium" and alloy_element.lower() == "neodymium":
