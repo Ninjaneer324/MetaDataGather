@@ -25,6 +25,8 @@ for i in range(1, 96):
     periodic_table[sheet.cell_value(i, 2)] = contents
 #will this handle alloys with different names such as Nichrome or steel?
 
+periodic_table['Al'] = {}
+
 print("Excel Book Opening and adding work sheet...\n")
 #open exccel workbook
 excel_workbook = xlsxwriter.Workbook('EngineeringVillage.xlsx')
@@ -54,18 +56,14 @@ for elem in periodic_table:
         base_symbol = elem
         alloy_element = periodic_table[a]['name']
         alloy_symbol = a
-        query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
-        #query = "\" "+base_symbol+"-*\" AND \"-*"+alloy_symbol+"\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
-        query += " NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic)"
-        if base_element.lower() != "iron" or alloy_element.lower() != "iron":
-            query += " NOT (steel)"
-        if base_element.lower() == "calcium" and alloy_element.lower() == "neodymium":
-            query += " NOT (Magnesium OR \"Mg\" OR ceramic OR laser)"
+        #query = "("+base_element+" OR "+base_symbol+") AND ("+alloy_element+" OR "+alloy_symbol+") AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
+        query = "\" "+base_symbol+"-*\" AND \"-*"+alloy_symbol+"\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response)))"
+        query += " NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
         #query = "(("+periodic_table[a]['name']+" OR "+a+") AND (precipitat* AND "+"(age* OR transform* OR microscop*)))"
         worksheet.write(row, 0, elem+"-"+a)
         print(query)
         #requests for search results
-        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c"}) #engineering village doesn't have count
+        response = requests.get(url, headers=headers,params={"query":query,"pageSize":100,"database":"c","sortField":"relevance"}) #engineering village doesn't have count
         print("Page 1",response.status_code)
         if response.status_code != 200:
             print("Error: HTTP", response.status_code)
@@ -130,7 +128,7 @@ for elem in periodic_table:
         #next 8 pages if any
         pages = min(8, ceil(total_results / 100))
         for i in range(1, pages):
-            response = requests.get(url, headers=headers,params={"query":query,"offset":i,"pageSize":100,"database":"c"}) #engineering village doesn't have count
+            response = requests.get(url, headers=headers,params={"query":query,"offset":i,"pageSize":100,"database":"c","sortField":"relevance"}) #engineering village doesn't have count
             print("Page",i + 1,response.status_code)
             if response.status_code != 200:
                 print("Error: HTTP", response.status_code)
