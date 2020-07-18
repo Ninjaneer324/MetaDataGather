@@ -29,7 +29,7 @@ periodic_table['Al']['alloys'] = {}
 
 print("Excel Book Opening and adding work sheet...\n")
 #open exccel workbook
-excel_workbook = xlsxwriter.Workbook('EngineeringVillage-symbolonly.xlsx')
+excel_workbook = xlsxwriter.Workbook('EngineeringVillage-basename-alloysymbol.xlsx')
 #add worksheet to workbook
 worksheet = excel_workbook.add_worksheet()
 #First 2 rows will detail what query format I applied
@@ -37,8 +37,8 @@ print("Writing column headers and query format...\n")
 worksheet.write(0,0,"Query Format")
 #f_mat = "({0} OR {1}) AND ({2} OR {3}) AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
 #f_mat = "{0} AND {2} AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
-f_mat = "\" {1}-*\" AND \"-*{3}\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
-#f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+#f_mat = "\" {1}-*\" AND \"-*{3}\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR laser OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"(I*)\" OR \"(IV)\" OR \"(V*)\")"
+f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat*) AND (phase* OR hardness OR hardening OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
 worksheet.write(0, 1, f_mat.format("base_element","base_symbol", "alloy_element", "alloy_symbol"))
 worksheet.write(2,1,"ID")
 worksheet.write(2,2,"Title")
@@ -79,6 +79,9 @@ for elem in periodic_table:
         if 'PAGE-RESULTS' in results['PAGE']:
             worksheet.write(row + 1, 0, "Total: " + str(total_results))
             for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
+                t = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                if "<inf>" in t:
+                    continue
                 if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                     ids = {}
                     if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
@@ -141,6 +144,9 @@ for elem in periodic_table:
 
                 results = response.json()
                 for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
+                    t = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                    if "<inf>" in t:
+                        continue
                     if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                         ids = {}
                         if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
