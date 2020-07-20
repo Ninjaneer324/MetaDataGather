@@ -56,6 +56,8 @@ for elem in periodic_table:
         continue
     alloys = periodic_table[elem]['alloys'].split(', ')
     for a in alloys:
+        exclude = 0
+        second_row = row + 1
         base_element = periodic_table[elem]['name']
         base_symbol = elem
         alloy_element = periodic_table[a]['name']
@@ -77,10 +79,10 @@ for elem in periodic_table:
         results = response.json()
         total_results = results['PAGE']['RESULTS-COUNT']
         if 'PAGE-RESULTS' in results['PAGE']:
-            worksheet.write(row + 1, 0, "Total: " + str(total_results))
             for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
                 t = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
                 if "<inf>" in t:
+                    exclude += 1
                     continue
                 if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                     ids = {}
@@ -146,6 +148,7 @@ for elem in periodic_table:
                 for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
                     t = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
                     if "<inf>" in t:
+                        exclude += 1
                         continue
                     if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
                         ids = {}
@@ -193,6 +196,10 @@ for elem in periodic_table:
                         worksheet.write(row, 1, str(ids))
                     row += 1
                 time.sleep(2)
+            total_results -= exclude
+            worksheet.write(second_row, 0, "Total: " + str(total_results))
+        else:
+            time.sleep(2)
 #close workbook'''
         row += 1
 
