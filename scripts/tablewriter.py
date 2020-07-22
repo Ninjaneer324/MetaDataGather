@@ -24,24 +24,28 @@ for i in range(1, 96):
     contents['pos'] = i
     periodic_table[sheet.cell_value(i, 2)] = contents
 
-nxn_table = xlsxwriter.Workbook('FinalProduct.xlsx')
+'''nxn_table = xlsxwriter.Workbook('FinalProduct.xlsx')
 worksheet = nxn_table.add_worksheet()
 sheet = periodic_wb.sheet_by_index(0)
 for i in range(1, 96):
     stuff = sheet.cell_value(i, 2)
     worksheet.write(0, i, stuff)
-    worksheet.write(i, 0, stuff)
+    worksheet.write(i, 0, stuff)'''
 del periodic_wb
 
 def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
     name_file = base_s+"-"+alloy_s+".xlsx"
+    if base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
+        name_file = "NoElement.xlsx"
     workbook = xlsxwriter.Workbook(name_file)
     worksheet = workbook.add_worksheet()
     row = 0
     worksheet.write(row, 0, "Query Format")
-    f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat*) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
-    if base_n == alloy_n:
-        f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat*) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+    f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+    if base_n == alloy_n and base_n != "":
+        f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+    elif base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
+        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
     worksheet.write(row, 1, f_mat)
     row = 2
     query = f_mat.format(base_n, base_s, alloy_n, alloy_s)
@@ -182,15 +186,13 @@ def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
     workbook.close()
     return total_results
 
-workbook_array = [["" for i in range(1, 96)] for j in range(1, 96)]
+#workbook_array = [["" for i in range(1, 96)] for j in range(1, 96)]
 
-for i in periodic_table:
+'''for i in periodic_table:
     for j in periodic_table:
         cell_str = ""
-        if i == j:
-            continue
         total = searchBaseAlloy(periodic_table[i]['name'], i, periodic_table[j]['name'], j)
-        filename = "Mo-"+i+".xlsx"
+        filename = i+"-"+j+".xlsx"
         if total != 0:
             read_workbook = xlrd.open_workbook(filename)
             sheet = read_workbook.sheet_by_index(0)
@@ -210,6 +212,6 @@ for i in periodic_table:
                     cell_str += ";"
                 else:
                     break
-        workbook_array[periodic_table["Mo"]["pos"] - 1][periodic_table[i]["pos"] - 1] = cell_str
+        workbook_array[periodic_table["Mo"]["pos"] - 1][periodic_table[i]["pos"] - 1] = cell_str'''
 
-nxn_table.close()
+#nxn_table.close()
