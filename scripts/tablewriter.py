@@ -33,7 +33,7 @@ for i in range(1, 96):
     worksheet.write(i, 0, stuff)'''
 del periodic_wb
 
-def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
+def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=0):
     name_file = base_s+"-"+alloy_s+".xlsx"
     if base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
         name_file = "NoElement.xlsx"
@@ -50,8 +50,8 @@ def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
     row = 2
     query = f_mat.format(base_n, base_s, alloy_n, alloy_s)
     print(query)
-    response = requests.get(url, headers=headers,params={"query":query})
-    print("Page 1",response.status_code)
+    response = requests.get(url, headers=headers,params={"query":query, "offset":start, "pageSize":100, "database":"c","sortField":"relevance"})
+    print("Page", start + 1,response.status_code)
     if response.status_code != 200:
         print("Error: HTTP", response.status_code)
         print("Closing Workbook...")
@@ -115,10 +115,8 @@ def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
             row += 1
         time.sleep(2)
 
-
-        #next 8 pages if any
-        '''pages = min(8, ceil(total_results / 100))
-        for i in range(1, pages):
+        pages = ceil(total_results / 100)
+        for i in range(start + 1, pages):
             response = requests.get(url, headers=headers,params={"query":query,"offset":i,"pageSize":100,"database":"c","sortField":"relevance"}) #engineering village doesn't have count
             print("Page",i + 1,response.status_code)
             if response.status_code != 200:
@@ -178,14 +176,17 @@ def searchBaseAlloy(base_n, base_s, alloy_n, alloy_s):
                     ids['DOC-ID'] = id
                     worksheet.write(row, 1, str(ids))
                 row += 1
-            time.sleep(2)'''
+            time.sleep(2)
         total_results -= exclude
+        if (i + 1) % 100 == 0:
+            time.sleep(10)
     else:
         time.sleep(2)
     worksheet.write(3, 0, total_results)
     workbook.close()
     return total_results
 
+searchBaseAlloy()
 #workbook_array = [["" for i in range(1, 96)] for j in range(1, 96)]
 
 '''for i in periodic_table:
