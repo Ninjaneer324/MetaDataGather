@@ -4,7 +4,7 @@ import requests
 import time
 from dateutil.parser import parse
 from math import ceil
-import re
+from re import search
 
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -24,13 +24,13 @@ for i in range(1, 96):
     contents['pos'] = i
     periodic_table[sheet.cell_value(i, 2)] = contents
 
-'''nxn_table = xlsxwriter.Workbook('FinalProduct.xlsx')
+nxn_table = xlsxwriter.Workbook('FinalProduct.xlsx')
 worksheet = nxn_table.add_worksheet()
 sheet = periodic_wb.sheet_by_index(0)
 for i in range(1, 96):
     stuff = sheet.cell_value(i, 2)
     worksheet.write(0, i, stuff)
-    worksheet.write(i, 0, stuff)'''
+    worksheet.write(i, 0, stuff)
 del periodic_wb
 
 def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=0):
@@ -45,7 +45,7 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
     if base_n == alloy_n and base_n != "":
         f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
     elif base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
-        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution*\" OR solub* OR solutioniz* OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* OR *SEM OR *TEM OR diffract* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
     worksheet.write(row, 1, f_mat)
     row = 2
     query = f_mat.format(base_n, base_s, alloy_n, alloy_s)
@@ -55,7 +55,7 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
     if response.status_code != 200:
         print("Error: HTTP", response.status_code)
         print("Closing Workbook...")
-        temp_workbook.close()
+        workbook.close()
         exit()
 
     #first page of results
@@ -178,8 +178,6 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
                 row += 1
             time.sleep(2)
         total_results -= exclude
-        if (i + 1) % 100 == 0:
-            time.sleep(10)
     else:
         time.sleep(2)
     worksheet.write(3, 0, total_results)
@@ -189,6 +187,19 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
 searchBaseAlloy()
 #workbook_array = [["" for i in range(1, 96)] for j in range(1, 96)]
 
+full_results = xlrd.open_workbook("NoElement.xlsx")
+ws = full_results.sheet_by_index(0)
+read_row = 2
+num_results = ws.cell_value(3, 0)
+if num_results > 0:
+    for i in periodic_table:
+        for j in periodic_table:
+            if i != j:
+                not_looked = r"-.*" + i
+                base = i + r"-.*"
+                alloy = r"-.*" + j
+del full_results
+nxn_table.close()
 '''for i in periodic_table:
     for j in periodic_table:
         cell_str = ""
