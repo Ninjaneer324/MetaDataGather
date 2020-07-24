@@ -5,6 +5,7 @@ import time
 from dateutil.parser import parse
 from math import ceil
 from re import search
+from urllib.parse import unquote
 
 apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
 #or is it the insttoken?
@@ -45,7 +46,7 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
     if base_n == alloy_n and base_n != "":
         f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
     elif base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
-        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution*\" OR solub* OR solutioniz* OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* OR *SEM OR *TEM OR diffract* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution*\" OR solub* OR solutioniz* OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* OR SEM OR TEM OR diffract* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
     worksheet.write(row, 1, f_mat)
     row = 2
     query = f_mat.format(base_n, base_s, alloy_n, alloy_s)
