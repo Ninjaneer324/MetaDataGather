@@ -37,16 +37,16 @@ del periodic_wb
 def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=0):
     name_file = base_s+"-"+alloy_s+".xlsx"
     if base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
-        name_file = "NoElement.xlsx"
+        name_file = "NoElement-3.xlsx"
     workbook = xlsxwriter.Workbook(name_file)
     worksheet = workbook.add_worksheet()
     row = 0
     worksheet.write(row, 0, "Query Format")
-    f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+    f_mat = "\"{0} alloys\" AND \"-*{3}\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\" OR  drug* OR cement* OR concrete* OR soil* OR pharma*)"
     if base_n == alloy_n and base_n != "":
-        f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+        f_mat = "\"pure "+base_n+"\" AND (age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution\" OR solub* OR solutionize OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* or SEM OR TEM OR diffract* OR dilatom* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR ceramic OR \" Fe-*\" OR steel OR \" Al-*\" OR \" Mg-*\" OR \"0-9+\" OR \"IV*\" OR \"VI*\" OR  drug* OR cement* OR concrete* OR soil* OR pharma*)"
     elif base_n == "" and base_s == "" and alloy_n == "" and alloy_s == "":
-        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution*\" OR solub* OR solutioniz* OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* OR SEM OR TEM OR diffract* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR \"0-9+\" OR \"IV*\" OR \"VI*\")"
+        f_mat = "(age* OR aging OR precipitat* OR inclusion* OR dispersoid* OR \"solid solution*\" OR solub* OR solutioniz* OR new*phase) AND (hardness OR hardening OR harden* OR strength*) AND (phase* OR tensile OR microsc* OR SEM OR TEM OR diffract* OR solvus OR (mech* AND (prop* OR response))) NOT (biol* OR diseas* OR cancer OR aqueous* OR \"0-9+\" OR \"IV*\" OR \"VI*\" OR  drug* OR cement* OR concrete* OR soil* OR pharma*)"
     worksheet.write(row, 1, f_mat)
     row = 2
     query = f_mat.format(base_n, base_s, alloy_n, alloy_s)
@@ -115,8 +115,69 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
                 worksheet.write(row, 1, str(ids))
             row += 1
         time.sleep(2)
+        next_i = start + 1
+        response = requests.get(url, headers=headers,params={"query":query, "offset":next_i, "pageSize":100, "database":"c","sortField":"relevance"})
+        print("Page", next_i + 1,response.status_code)
+        if response.status_code != 200:
+            print("Error: HTTP", response.status_code)
+            print("Closing Workbook...")
+            workbook.close()
+            exit()
 
-        pages = ceil(total_results / 100)
+        results = response.json()
+        if 'PAGE-RESULTS' in results['PAGE']:
+            for item in results['PAGE']['PAGE-RESULTS']['PAGE-ENTRY']:
+                t = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                if "<inf>" in t:
+                    exclude += 1
+                    continue
+                if 'EI-DOCUMENT' in item and 'DOCUMENTPROPERTIES' in item['EI-DOCUMENT']:
+                    ids = {}
+                    if 'DO' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        id = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['DO']
+                        ids['DOI'] = id
+                        worksheet.write(row, 1, str(ids))
+                    else:
+                        worksheet.write(row, 1, "missing")
+                            
+                    if 'TI' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        title = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['TI']
+                        worksheet.write(row, 2, title)
+                    else:
+                        worksheet.write(row, 2, "missing")
+                            
+                    if 'SD' in item['EI-DOCUMENT']['DOCUMENTPROPERTIES']:
+                        date = item['EI-DOCUMENT']['DOCUMENTPROPERTIES']['SD']
+                        worksheet.write(row, 4, date)
+                    else:
+                        worksheet.write(row,4,"missing")
+                else:
+                        worksheet.write(row, 1, "missing")
+                        worksheet.write(row, 2, "missing")
+                        worksheet.write(row,4,"missing")
+
+                if 'AUS' in item['EI-DOCUMENT'] and 'AU' in item['EI-DOCUMENT']['AUS']:
+                    s = ""
+                    for i in range(len(item['EI-DOCUMENT']['AUS']['AU'])):
+                        s += item['EI-DOCUMENT']['AUS']['AU'][i]['NAME']
+                        if i != len(item['EI-DOCUMENT']['AUS']['AU']) - 1:
+                            s += ";"
+                    worksheet.write(row, 3, s)
+                else:
+                    worksheet.write(row, 3, "missing")
+                    
+                if 'DOI' not in ids and 'DOCUMENTOBJECTS' in item['EI-DOCUMENT'] and 'CITEDBY' in item['EI-DOCUMENT']['DOCUMENTOBJECTS'] and 'DOI' in item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']:
+                    id = unquote(item['EI-DOCUMENT']['DOCUMENTOBJECTS']['CITEDBY']['DOI'])
+                    ids['DOI'] = id
+                    worksheet.write(row, 1, str(ids))
+                elif 'DOC' in item['EI-DOCUMENT'] and 'DOC-ID' in item['EI-DOCUMENT']['DOC']:
+                    id = item['EI-DOCUMENT']['DOC']['DOC-ID']
+                    ids['DOC-ID'] = id
+                    worksheet.write(row, 1, str(ids))
+                row += 1
+        
+
+        '''pages = ceil(total_results / 100)
         for i in range(start + 1, pages):
             response = requests.get(url, headers=headers,params={"query":query,"offset":i,"pageSize":100,"database":"c","sortField":"relevance"}) #engineering village doesn't have count
             print("Page",i + 1,response.status_code)
@@ -124,7 +185,6 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
                 print("Error: HTTP", response.status_code)
                 print("Closing Workbook...")
                 excel_workbook.close()
-                doc_id_file.close()
                 exit()
 
             results = response.json()
@@ -178,9 +238,9 @@ def searchBaseAlloy(base_n = "", base_s = "", alloy_n = "", alloy_s = "", start=
                     worksheet.write(row, 1, str(ids))
                 row += 1
             time.sleep(2)
-        total_results -= exclude
     else:
-        time.sleep(2)
+        time.sleep(2)'''
+    total_results -= exclude
     worksheet.write(3, 0, total_results)
     workbook.close()
     return total_results
