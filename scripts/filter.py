@@ -29,10 +29,11 @@ rows = sheet.nrows
 r = 0
 while r < rows:
     base = sheet.cell_value(0, r).strip()
+    print(base)
     r += 3
     alloy_names = []
-    while r < rows and sheet.cell_value(0, r):
-        stuff = sheet.cell_value(0, r)
+    while r < rows and sheet.cell_value(r, 0):
+        stuff = sheet.cell_value(r, 0)
         first_parenthesis = stuff.find("(")
         second_parenthesis = stuff.find(")")
         alloy_n = stuff[0:second_parenthesis + 1].strip() if (first_parenthesis > -1 and second_parenthesis > -1) else stuff.strip()
@@ -52,8 +53,10 @@ def containsElement(input_str=""):
         if 'symbol' in periodic_table[i]:
             base = periodic_table[i]['symbol'] + r"-.*"
             alloy = r"-.*" + periodic_table[i]['symbol']
-        alloy_names = i['alloy_names']
-        if (i.lower() in input_str.lower()) or search(base, input_str) or search(alloy, input_str) or any(item in input_str for item in alloy_names):
+            alloy_names = None
+        if 'alloy_names' in periodic_table[i]:
+            alloy_names = periodic_table[i]['alloy_names']
+        if (i.lower() in input_str.lower()) or search(base, input_str) or search(alloy, input_str) or (alloy_names is not None and any(item in input_str for item in alloy_names)):
             return True
     return False
 
