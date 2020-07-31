@@ -13,13 +13,58 @@ fil_sheet = filtered.add_worksheet()
 
 uniques = {}
 
+periodic_table = {}
+periodic_wb = xlrd.open_workbook("Periodic-Table.xlsx")
+sheet = periodic_wb.sheet_by_index(0)
+for i in range(1, 96):
+    contents = {}
+    contents['symbol'] = sheet.cell_value(i, 2)
+    contents['pos'] = i
+    periodic_table[sheet.cell_value(i, 1)] = contents
+del periodic_wb
+
+common_alloys = xlrd.open_workbook("Common Alloys' Names.xlsx")
+sheet = common_alloys.sheet_by_index(0)
+rows = sheet.nrows
+r = 0
+while r < rows:
+    base = sheet.cell_value(0, r).strip()
+    r += 3
+    alloy_names = []
+    while r < rows and sheet.cell_value(0, r):
+        stuff = sheet.cell_value(0, r)
+        first_parenthesis = stuff.find("(")
+        second_parenthesis = stuff.find(")")
+        alloy_n = stuff[0:second_parenthesis + 1].strip() if (first_parenthesis > -1 and second_parenthesis > -1) else stuff.strip()
+        alloy_names.append(alloy_n)
+        r += 1
+    if base in periodic_table:
+        periodic_table[base]['alloy_names'] = alloy_names
+    else:
+        contents = {'alloy_names':alloy_names}
+        periodic_table[base] = contents
+    r += 1
+
+def containsElement(input_str=""):
+    for i in periodic_table:
+        base = i
+        alloy = i
+        if 'symbol' in periodic_table[i]:
+            base = periodic_table[i]['symbol'] + r"-.*"
+            alloy = r"-.*" + periodic_table[i]['symbol']
+        alloy_names = i['alloy_names']
+        if (i.lower() in input_str.lower()) or search(base, input_str) or search(alloy, input_str) or any(item in input_str for item in alloy_names):
+            return True
+    return False
+
 for r in range(1, no_element_sheet.nrows):
     title = str(no_element_sheet.cell_value(r, 5))
-    if title.lower() not in uniques:
+    abstract = str(no_element_sheet.cell_value(r, 2))
+    if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)):
         content = {}
         content['reference-type'] = no_element_sheet.cell_value(r,0)
         content['record-number'] = no_element_sheet.cell_value(r, 1)
-        content['abstract'] = no_element_sheet.cell_value(r, 2)
+        content['abstract'] = abstract
         content['author'] = no_element_sheet.cell_value(r, 3)
         content['year'] = no_element_sheet.cell_value(r, 4)
         content['title'] = title
