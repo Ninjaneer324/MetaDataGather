@@ -28,11 +28,10 @@ sheet = common_alloys.sheet_by_index(0)
 rows = sheet.nrows
 r = 0
 while r < rows:
-    base = sheet.cell_value(0, r).strip()
-    print(base)
+    base = sheet.cell_value(r, 0).strip()
     r += 3
     alloy_names = []
-    while r < rows and sheet.cell_value(r, 0):
+    while r < rows and sheet.cell_value(r, 0) != "-":
         stuff = sheet.cell_value(r, 0)
         first_parenthesis = stuff.find("(")
         second_parenthesis = stuff.find(")")
@@ -78,10 +77,10 @@ for r in range(1, no_element_sheet.nrows):
 del no_element
 fil_sheet.write(0, 0, "Reference Type")
 fil_sheet.write(0, 1, "Record Number")
-fil_sheet.write(0, 2, "Abstract")
+fil_sheet.write(0, 2, "Year")
 fil_sheet.write(0, 3, "Author")
-fil_sheet.write(0, 4, "Year")
-fil_sheet.write(0, 5, "Title")
+fil_sheet.write(0, 4, "Title")
+fil_sheet.write(0, 5, "Abstract")
 fil_sheet.write(0, 6, "Keywords")
 fil_sheet.write(0, 7, "Label")
 fil_sheet.write(0, 8, "LANL Style")
@@ -89,10 +88,10 @@ row = 1
 for i in uniques:
     fil_sheet.write(row, 0, uniques[i]['reference-type'])
     fil_sheet.write(row, 1, uniques[i]['record-number'])
-    fil_sheet.write(row, 2, uniques[i]['abstract'])
+    fil_sheet.write(row, 2, uniques[i]['year'])
     fil_sheet.write(row, 3, uniques[i]['author'])
-    fil_sheet.write(row, 4, uniques[i]['year'])
-    fil_sheet.write(row, 5, uniques[i]['title'])
+    fil_sheet.write(row, 4, uniques[i]['title'])
+    fil_sheet.write(row, 5, uniques[i]['abstract'])
     fil_sheet.write(row, 6, uniques[i]['keywords'])
     fil_sheet.write(row, 7, uniques[i]['label'])
     fil_sheet.write(row, 8, uniques[i]['lanl-style'])
