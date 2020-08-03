@@ -10,7 +10,7 @@ from urllib.parse import unquote
 
 no_element = xlrd.open_workbook("FirstDataBase01.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
-filtered = xlsxwriter.Workbook("FirstDataBase03.xlsx")
+filtered = xlsxwriter.Workbook("FirstDataBase02v2.xlsx")
 fil_sheet = filtered.add_worksheet()
 
 def is_all_caps(s):
@@ -27,15 +27,15 @@ def is_all_caps(s):
     return words'''
 
 def allTerms(listOfTerms = [], input_str = "", delimiter = " "):
-    words = []
+    words = {}
     for i in listOfTerms:
         r = r"" + i
         if not is_all_caps(i):
             if search(r, input_str, re.IGNORECASE):
-                words.append(i)
+                words[i] = findall(r, input_str, re.IGNORECASE)
         else:
             if search(r, input_str):
-                words.append(i)
+                words[i] = findall(r, input_str)
     return words
 
 best_terms = []
@@ -50,7 +50,7 @@ good_terms = []
 with open("good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         good_terms.append(res)
 
@@ -58,7 +58,7 @@ margin_good_terms = []
 with open("margin_good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         margin_good_terms.append(res)
 
@@ -66,7 +66,7 @@ neutral_terms = []
 with open("neutral_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         neutral_terms.append(res)
 
@@ -74,7 +74,7 @@ margin_bad_terms = []
 with open("margin_bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         margin_bad_terms.append(res)
 
@@ -82,7 +82,7 @@ bad_terms = []
 with open("bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         bad_terms.append(res)
 
@@ -90,7 +90,7 @@ unpromising_terms = []
 with open("unpromising_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
-        white_space_after = "\s" if line.strip().endswith("*") else ""
+        white_space_after = "\s"
         res = line.strip().replace("*", ".*")
         unpromising_terms.append(res)
 
@@ -224,20 +224,20 @@ for r in range(1, no_element_sheet.nrows):
         content['label'] = no_element_sheet.cell_value(r, 8)
         content['lanl-style'] = no_element_sheet.cell_value(r, 9)
         content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
-        '''tempo = list(dict.fromkeys(allTerms(best_terms, title) + allTerms(best_terms, abstract) + allTerms(best_terms, keywords)))
+        tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
         content['+10'] = tempo
-        tempo = list(dict.fromkeys(allTerms(good_terms, title) + allTerms(good_terms, abstract) + allTerms(good_terms, keywords)))
+        tempo = {'title':allTerms(good_terms, title), 'abstract':allTerms(good_terms, abstract), 'keywords':allTerms(good_terms, keywords)}
         content['+3'] = tempo
-        tempo = list(dict.fromkeys(allTerms(margin_good_terms, title) + allTerms(margin_good_terms, abstract) + allTerms(margin_good_terms, keywords)))
+        tempo = {'title':allTerms(margin_good_terms, title), 'abstract':allTerms(margin_good_terms, abstract), 'keywords':allTerms(margin_good_terms, keywords)}
         content['+1'] = tempo
-        tempo = list(dict.fromkeys(allTerms(neutral_terms, title) + allTerms(neutral_terms, abstract) + allTerms(neutral_terms, keywords)))
+        tempo = {'title':allTerms(neutral_terms, title), 'abstract':allTerms(neutral_terms, abstract), 'keywords':allTerms(neutral_terms, keywords)}
         content['+0'] = tempo
-        tempo = list(dict.fromkeys(allTerms(margin_bad_terms, title) + allTerms(margin_bad_terms, abstract) + allTerms(margin_bad_terms, keywords)))
+        tempo = {'title':allTerms(margin_bad_terms, title), 'abstract':allTerms(margin_bad_terms, abstract), 'keywords':allTerms(margin_bad_terms, keywords)}
         content['-1'] = tempo
-        tempo = list(dict.fromkeys(allTerms(bad_terms, title) + allTerms(bad_terms, abstract) + allTerms(bad_terms, keywords)))
+        tempo = {'title':allTerms(bad_terms, title), 'abstract':allTerms(bad_terms, abstract), 'keywords':allTerms(bad_terms, keywords)}
         content['-3'] = tempo
-        tempo = list(dict.fromkeys(allTerms(unpromising_terms, title) + allTerms(unpromising_terms, abstract) + allTerms(unpromising_terms, keywords)))
-        content['-10'] = tempo'''
+        tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
+        content['-10'] = tempo
         uniques[title.lower()] = content
         
 
@@ -253,13 +253,13 @@ fil_sheet.write(0, 7, "Journal")
 fil_sheet.write(0, 8, "Label")
 fil_sheet.write(0, 9, "LANL Style")
 fil_sheet.write(0, 10, "Score")
-'''fil_sheet.write(0, 11, "+10")
+fil_sheet.write(0, 11, "+10")
 fil_sheet.write(0, 12, "+3")
 fil_sheet.write(0, 13, "+1")
 fil_sheet.write(0, 14, "+0")
 fil_sheet.write(0, 15, "-1")
 fil_sheet.write(0, 16, "-3")
-fil_sheet.write(0, 17, "-10")'''
+fil_sheet.write(0, 17, "-10")
 row = 1
 for i in uniques:
     fil_sheet.write(row, 0, uniques[i]['reference-type'])
@@ -273,12 +273,12 @@ for i in uniques:
     fil_sheet.write(row, 8, uniques[i]['label'])
     fil_sheet.write(row, 9, uniques[i]['lanl-style'])
     fil_sheet.write(row, 10, uniques[i]['score'])
-    '''fil_sheet.write(row, 11, str(uniques[i]['+10']))
+    fil_sheet.write(row, 11, str(uniques[i]['+10']))
     fil_sheet.write(row, 12, str(uniques[i]['+3']))
     fil_sheet.write(row, 13, str(uniques[i]['+1']))
     fil_sheet.write(row, 14, str(uniques[i]['+0']))
     fil_sheet.write(row, 15, str(uniques[i]['-1']))
     fil_sheet.write(row, 16, str(uniques[i]['-3']))
-    fil_sheet.write(row, 17, str(uniques[i]['-10']))'''
+    fil_sheet.write(row, 17, str(uniques[i]['-10']))
     row += 1
 filtered.close()
