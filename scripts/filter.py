@@ -51,7 +51,7 @@ with open("good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         good_terms.append(res)
 
 margin_good_terms = []
@@ -59,7 +59,7 @@ with open("margin_good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         margin_good_terms.append(res)
 
 neutral_terms = []
@@ -67,7 +67,7 @@ with open("neutral_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         neutral_terms.append(res)
 
 margin_bad_terms = []
@@ -75,7 +75,7 @@ with open("margin_bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         margin_bad_terms.append(res)
 
 bad_terms = []
@@ -83,7 +83,7 @@ with open("bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         bad_terms.append(res)
 
 unpromising_terms = []
@@ -91,7 +91,7 @@ with open("unpromising_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = line.strip().replace("*", ".*")
+        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
         unpromising_terms.append(res)
 
 periodic_table = {}
@@ -137,7 +137,7 @@ def containsElement(input_str=""):
         alloy_names = None
         if 'alloy_names' in periodic_table[i]:
             alloy_names = periodic_table[i]['alloy_names']
-        if (i.lower() in input_str.lower()) or search(base, input_str) or search(alloy, input_str) or (alloy_names is not None and any(item in input_str for item in alloy_names)):
+        if (i.lower() in input_str.lower()) or search(base, input_str) or search(alloy, input_str) or (alloy_names is not None and any((search(r""+(item[0:item.find("(") - 1] if item.find("(") > -1 else item), input_str) if is_all_caps(item[0:item.find("(") - 1]) else search(r"" + (item[0:item.find("(") - 1] if item.find("(") > -1 else item), input_str, re.IGNORECASE)) for item in alloy_names)):
             return True
     return False
 
