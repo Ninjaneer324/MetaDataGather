@@ -53,7 +53,7 @@ def checkPure(input_str, elem):
 def checkDashNotation(input_str, base, alloy):
     if periodic_table[base]['pos'] < 104 and periodic_table[alloy]['pos'] < 104:
         #print(periodic_table[base]['symbol']+"-"+periodic_table[alloy]['symbol'])
-        reg_base = r"[^-]+\s+"+periodic_table[base]['symbol']+r"-.*" + periodic_table[alloy]['symbol']
+        reg_base = r"[^-]+\s+"+periodic_table[base]['symbol']+r"-.*" + periodic_table[alloy]['symbol']+r"[-\s]+"
         reg_base_2 = r"[^-]+\s+"+base+r"-.*" +alloy
         return True if (search(reg_base, input_str, re.IGNORECASE) or search(reg_base_2, input_str, re.IGNORECASE)) else False
     return False
@@ -61,7 +61,7 @@ def checkDashNotation(input_str, base, alloy):
 def checkNoDash(input_str, base,alloy):
     if periodic_table[base]['pos'] < 104 and periodic_table[alloy]['pos'] < 104:
         #print(periodic_table[base]['symbol']+"-"+periodic_table[alloy]['symbol'])
-        reg_base = r"" + periodic_table[base]['symbol'] + r"[a-zA-Z]*" + periodic_table[alloy]['symbol']
+        reg_base = r"" + periodic_table[base]['symbol'] + r"[a-zA-Z]" + periodic_table[alloy]['symbol']
         reg_base_2 = r"" + periodic_table[base]['symbol'] + periodic_table[alloy]['symbol']
         return True if search(reg_base, input_str) or search(reg_base_2, input_str) else False
     return False
@@ -72,23 +72,28 @@ def capitalizeWords(input_str):
         s += i.capitalize() + " "
     return s
 
-def checkAlloyNames(input_str, base):
+def checkAlloyNames(input_str):
     pairs = []
-    if 'alloy_names' in periodic_table[base]:
-        alloy_names = periodic_table[base]['alloy_names']
-        for a in alloy_names:
-            alloying_low = a[a.find("(") + 1: a.find(")")].split(", ")
-            alloying = [capitalizeWords(j) for j in alloying_low]
-            if (search(r""+a[0:a.find("(")].strip(), input_str) if is_all_caps(a[0:a.find("(")]) else search(r""+a[0:a.find("(")].strip(), input_str, re.IGNORECASE)):
-                for j in alloying:
-                    pairs.append([periodic_table[base]['pos'], periodic_table[j]['pos']])
+    for base in periodic_table:
+        if 'alloy_names' in periodic_table[base]:
+            alloy_names = periodic_table[base]['alloy_names']
+            for a in alloy_names:
+                alloying_low = a[a.find("(") + 1: a.find(")")].split(", ")
+                alloying = [capitalizeWords(j).strip() for j in alloying_low]
+                if (search(r""+a[0:a.find("(")].strip(), input_str) if is_all_caps(a[0:a.find("(")]) else search(r""+a[0:a.find("(")].strip(), input_str, re.IGNORECASE)):
+                    for j in alloying:
+                        pairs.append([periodic_table[base]['pos'], periodic_table[j]['pos']])
     return pairs
 unadded = []
 
+periodic_array = [["" for i in range(106)] for j in range(106)]
+
 filtered = xlrd.open_workbook('FirstDataBase02v2.xlsx')
 fil_sheet = filtered.sheet_by_index(0)
-rows = fil_sheet.nrows
-for r in range(1, rows):
+start = 1
+records_counted = []
+for r in range(start, fil_sheet.nrows):
+    counted = False
     title = fil_sheet.cell_value(r, 4)
     abstract = fil_sheet.cell_value(r, 5)
     keywords = fil_sheet.cell_value(r, 6)
@@ -96,27 +101,59 @@ for r in range(1, rows):
     year = int(fil_sheet.cell_value(r, 2))
     author_f = fil_sheet.cell_value(r, 3)
     author = author_f[0:author_f.find(",")].strip().lower()
-    for b in periodic_table:
-        for a in periodic_table:
-            print(b+"-"+a)
-            if b == a:
-                if checkPure(title, b) or checkPure(abstract, b) or checkPure(keywords, b):
-                    pos = periodic_table[b]['pos']
-                    worksheet.write(pos, pos, str(year)+author)
-                    continue
-            if checkDashNotation(title, b, a) or checkDashNotation(abstract, b, a) or checkDashNotation(keywords, b, a):
-                pos_b = periodic_table[b]['pos']
-                pos_a = periodic_table[a]['pos']
-                worksheet.write(pos_b, pos_a, str(year)+author)
-            if checkNoDash(title, b, a) or checkNoDash(abstract, b, a) or checkNoDash(keywords, b, a):
-                pos_b = periodic_table[b]['pos']
-                pos_a = periodic_table[a]['pos']
-                worksheet.write(pos_b, pos_a, str(year)+author)
-    
-        alloy_names_temp = checkAlloyNames(title, b) + checkAlloyNames(abstract, b) + checkAlloyNames(keywords, b)
-        if alloy_names_temp:
-            for p in alloy_names_temp:
-                worksheet.write(p[0], p[1], str(year)+author)
+    alloy_names_temp = checkAlloyNames(title) + checkAlloyNames(abstract) + checkAlloyNames(keywords)
+    if alloy_names_temp:
+        print("Named alloys found")
+        counted = True
+        for p in alloy_names_temp:
+            
+                periodic_array[p[0] - 1][p[1] - 1] = periodic_array[p[0] - 1][p[1] - 1] + (";" if periodic_array[p[0] - 1][p[1] - 1] else "") +str(year)+author
+            
+    for b in periodic_table:       
+        if checkPure(title, b) or checkPure(abstract, b) or checkPure(keywords, b):
+                counted = True
+                pos = periodic_table[b]['pos']
+                periodic_array[pos - 1][pos - 1] = periodic_array[pos - 1][pos - 1] + (";" if periodic_array[pos - 1][pos - 1] else "") +str(year)+author
+        '''if checkDashNotation(title, b, a) or checkDashNotation(abstract, b, a) or checkDashNotation(keywords, b, a):
+            print(fil_sheet.cell_value(r, 1))
+            print("checkDashNotation")
+            pos_b = periodic_table[b]['pos']
+            pos_a = periodic_table[a]['pos']
+            periodic_array[pos_b - 1][pos_a - 1] = periodic_array[pos_b - 1][pos_a - 1] + (";" if periodic_array[pos_b - 1][pos_a - 1] else "") +str(year)+author
+            worksheet.write(pos_b, pos_a, str(year)+author)
+        elif checkNoDash(title, b, a) or checkNoDash(abstract, b, a) or checkNoDash(keywords, b, a):
+            print(fil_sheet.cell_value(r, 1))
+            print("checkNoDashNotation")
+            pos_b = periodic_table[b]['pos']
+            pos_a = periodic_table[a]['pos']
+            periodic_array[pos_b - 1][pos_a - 1] = periodic_array[pos_b - 1][pos_a - 1] + (";" if periodic_array[pos_b - 1][pos_a - 1] else "") +str(year)+author
+            worksheet.write(pos_b, pos_a, str(year)+author)'''
+    if counted:
+        records_counted.append(int(fil_sheet.cell_value(r, 1)))
+print("Left:", fil_sheet.nrows - len(records_counted) - 1)
+
+'''for r in range(1, fil_sheet.nrows):
+    if int(fil_sheet.cell_value(r, 1)) not in records_counted:
+        print("Title:", fil_sheet.cell_value(r, 4), "\n")
+        print("Abstract:", fil_sheet.cell_value(r, 5), "\n")
+        print("Keywords:", fil_sheet.cell_value(r, 6), "\n")
+        
+        base = input("Base Alloy? (separate with comma): ").strip()
+        alloy = input("Alloy elements? (separate with comma, then base with semicolon): ").strip()
+
+        if base.lower() != "n/a" and alloy.lower() != "n/a":
+            base_elems = re.split(r",\s*", base)
+            alloy_elems = re.split(r";\s*", alloy)
+            for b in range(len(base_elems)):
+                a_mini = re.split(r',\s*', alloy_elems[b])
+                for a in a_mini:
+                    author_f = fil_sheet.cell_value(r, 3)
+                    author = author_f[0:author_f.find(",")].strip().lower()
+                    periodic_array[periodic_table[base_elems[b].capitalize()]['pos']][periodic_table[a.capitalize()]['pos']] += str(int(fil_sheet.cell_value(r,2))) + author'''
+
+for base in range(len(periodic_array)):
+    for alloy in range(len(periodic_array[base])):
+        worksheet.write(base + 1, alloy + 1, periodic_array[base][alloy])
 
 del filtered
 nxn_table.close()

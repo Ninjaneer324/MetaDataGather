@@ -211,7 +211,8 @@ for r in range(1, no_element_sheet.nrows):
     print(title)
     abstract = str(no_element_sheet.cell_value(r, 2))
     keywords = str(no_element_sheet.cell_value(r, 6))
-    if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30):
+    if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)):
+        '''and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30)'''
         content = {}
         content['reference-type'] = no_element_sheet.cell_value(r,0)
         content['record-number'] = no_element_sheet.cell_value(r, 1)
