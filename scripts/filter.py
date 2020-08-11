@@ -8,9 +8,9 @@ from re import search
 from re import findall
 from urllib.parse import unquote
 
-no_element = xlrd.open_workbook("FirstDataBase01.xlsx")
+no_element = xlrd.open_workbook("WOSMasterList.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
-filtered = xlsxwriter.Workbook("FirstDataBase02v2.xlsx")
+filtered = xlsxwriter.Workbook("WOSMasterList-withscore.xlsx")
 fil_sheet = filtered.add_worksheet()
 
 def is_all_caps(s):
@@ -207,39 +207,40 @@ def totalScore(input_str=""):
 uniques = {}
 
 for r in range(1, no_element_sheet.nrows):
-    title = str(no_element_sheet.cell_value(r, 5))
-    print(title)
-    abstract = str(no_element_sheet.cell_value(r, 2))
-    keywords = str(no_element_sheet.cell_value(r, 6))
-    if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)):
-        '''and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30)'''
-        content = {}
-        content['reference-type'] = no_element_sheet.cell_value(r,0)
-        content['record-number'] = no_element_sheet.cell_value(r, 1)
-        content['abstract'] = abstract
-        content['author'] = no_element_sheet.cell_value(r, 3)
-        content['year'] = no_element_sheet.cell_value(r, 4)
-        content['title'] = title
-        content['keywords'] = keywords
-        content['journal'] = no_element_sheet.cell_value(r, 7)
-        content['label'] = no_element_sheet.cell_value(r, 8)
-        content['lanl-style'] = no_element_sheet.cell_value(r, 9)
-        content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
-        tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
-        content['+10'] = tempo
-        tempo = {'title':allTerms(good_terms, title), 'abstract':allTerms(good_terms, abstract), 'keywords':allTerms(good_terms, keywords)}
-        content['+3'] = tempo
-        tempo = {'title':allTerms(margin_good_terms, title), 'abstract':allTerms(margin_good_terms, abstract), 'keywords':allTerms(margin_good_terms, keywords)}
-        content['+1'] = tempo
-        tempo = {'title':allTerms(neutral_terms, title), 'abstract':allTerms(neutral_terms, abstract), 'keywords':allTerms(neutral_terms, keywords)}
-        content['+0'] = tempo
-        tempo = {'title':allTerms(margin_bad_terms, title), 'abstract':allTerms(margin_bad_terms, abstract), 'keywords':allTerms(margin_bad_terms, keywords)}
-        content['-1'] = tempo
-        tempo = {'title':allTerms(bad_terms, title), 'abstract':allTerms(bad_terms, abstract), 'keywords':allTerms(bad_terms, keywords)}
-        content['-3'] = tempo
-        tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
-        content['-10'] = tempo
-        uniques[title.lower()] = content
+    if no_element_sheet.cell_value(r, 0) != "Patent":
+        title = str(no_element_sheet.cell_value(r, 5))
+        print(title)
+        abstract = str(no_element_sheet.cell_value(r, 2))
+        keywords = str(no_element_sheet.cell_value(r, 6))
+        if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)):
+            '''and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30)'''
+            content = {}
+            content['reference-type'] = no_element_sheet.cell_value(r,0)
+            content['record-number'] = no_element_sheet.cell_value(r, 1)
+            content['abstract'] = abstract
+            content['author'] = no_element_sheet.cell_value(r, 3)
+            content['year'] = no_element_sheet.cell_value(r, 4)
+            content['title'] = title
+            content['keywords'] = keywords
+            content['journal'] = no_element_sheet.cell_value(r, 7)
+            content['label'] = no_element_sheet.cell_value(r, 8)
+            content['lanl-style'] = no_element_sheet.cell_value(r, 9)
+            content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
+            tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
+            content['+10'] = tempo
+            tempo = {'title':allTerms(good_terms, title), 'abstract':allTerms(good_terms, abstract), 'keywords':allTerms(good_terms, keywords)}
+            content['+3'] = tempo
+            tempo = {'title':allTerms(margin_good_terms, title), 'abstract':allTerms(margin_good_terms, abstract), 'keywords':allTerms(margin_good_terms, keywords)}
+            content['+1'] = tempo
+            tempo = {'title':allTerms(neutral_terms, title), 'abstract':allTerms(neutral_terms, abstract), 'keywords':allTerms(neutral_terms, keywords)}
+            content['+0'] = tempo
+            tempo = {'title':allTerms(margin_bad_terms, title), 'abstract':allTerms(margin_bad_terms, abstract), 'keywords':allTerms(margin_bad_terms, keywords)}
+            content['-1'] = tempo
+            tempo = {'title':allTerms(bad_terms, title), 'abstract':allTerms(bad_terms, abstract), 'keywords':allTerms(bad_terms, keywords)}
+            content['-3'] = tempo
+            tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
+            content['-10'] = tempo
+            uniques[title.lower()] = content
         
 
 del no_element
