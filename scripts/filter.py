@@ -10,7 +10,7 @@ from urllib.parse import unquote
 
 no_element = xlrd.open_workbook("WOSMasterList.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
-filtered = xlsxwriter.Workbook("WOSMasterList-withscore.xlsx")
+filtered = xlsxwriter.Workbook("WOSMasterListexcludedv1a.xlsx")
 fil_sheet = filtered.add_worksheet()
 
 def is_all_caps(s):
@@ -43,7 +43,7 @@ with open("best_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         best_terms.append(res)
 
 good_terms = []
@@ -51,7 +51,7 @@ with open("good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         good_terms.append(res)
 
 margin_good_terms = []
@@ -59,7 +59,7 @@ with open("margin_good_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         margin_good_terms.append(res)
 
 neutral_terms = []
@@ -67,7 +67,7 @@ with open("neutral_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         neutral_terms.append(res)
 
 margin_bad_terms = []
@@ -75,7 +75,7 @@ with open("margin_bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         margin_bad_terms.append(res)
 
 bad_terms = []
@@ -83,7 +83,7 @@ with open("bad_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         bad_terms.append(res)
 
 unpromising_terms = []
@@ -91,7 +91,7 @@ with open("unpromising_terms.txt", "r") as file:
     for line in file:
         white_space_before = "\s" if line.strip().startswith("*") else ""
         white_space_after = "\s"
-        res = white_space_before + line.strip().replace("*", ".*") + white_space_after
+        res = white_space_before + line.strip().replace("*", "[a-zA-Z0-9]*") + white_space_after
         unpromising_terms.append(res)
 
 periodic_table = {}
@@ -103,6 +103,38 @@ for i in range(1, 104):
     contents['pos'] = i
     periodic_table[sheet.cell_value(i, 1)] = contents
 del periodic_wb
+
+def findBaseAlloy(input_str):
+    pairs = {}
+    for base in periodic_table:
+        for alloy in periodic_table:
+            if not (base == alloy):
+                b = r"\s+"+periodic_table[base]['symbol']+r"[\s-]*"
+                b_2 = r"\s+"+base+r"[\s-]*"
+                a = r"-+[awt\.0-9%\s]*"+periodic_table[alloy]['symbol']+r"[\s-]*"
+                a_2 = r"-+[awt\.0-9%\s]*"+alloy+r"[\s-]*"
+                if (search(b, input_str) and search(a, input_str)) or (search(b_2, input_str) and search(a, input_str)) or (search(b, input_str) and search(a_2, input_str)) or (search(b_2, input_str) and search(a_2, input_str)):
+                    if periodic_table[base]['symbol'] in pairs:
+                        pairs[periodic_table[base]['symbol']].append(periodic_table[alloy]['symbol'])
+                    else:
+                        pairs[periodic_table[base]['symbol']] = [periodic_table[alloy]['symbol']]
+    return pairs
+
+def findAlloyNames(input_str):
+    pairs = {}
+    for base in periodic_table:
+        if 'alloy_names' in periodic_table[base]:
+            for mat in periodic_table[base]['alloy_names']:
+                name = mat[0:mat.find("(")].strip()
+                alloys = mat[mat.find("(") + 1:mat.find(")")].split(", ")
+                if (search(name, input_str) if is_all_caps(name) else search(name, input_str, re.IGNORECASE)):
+                    if periodic_table[base]['symbol'] in pairs:
+                        temp = pairs[periodic_table[base]['symbol']][0] + alloys
+                        pairs[periodic_table[base]['symbol']][0] = list(set(temp))
+                        pairs[periodic_table[base]['symbol']][1].append(name)
+                    else:
+                       pairs[periodic_table[base]['symbol']] = [list(set(alloys)), [name]]
+    return pairs                
 
 common_alloys = xlrd.open_workbook("Common Alloys' Names.xlsx")
 sheet = common_alloys.sheet_by_index(0)
@@ -131,8 +163,8 @@ def containsElement(input_str=""):
         base = i
         alloy = i
         if 'symbol' in periodic_table[i]:
-            base = periodic_table[i]['symbol'] + r"-.*"
-            alloy = r"-.*" + periodic_table[i]['symbol']
+            base = periodic_table[i]['symbol'] + r"-[a-zA-Z0-9%]*"
+            alloy = r"-[a-zA-Z0-9%]*" + periodic_table[i]['symbol']
         
         alloy_names = None
         if 'alloy_names' in periodic_table[i]:
@@ -205,44 +237,73 @@ def totalScore(input_str=""):
     return score
 
 uniques = {}
-
+repeat_cnt = 0
 for r in range(1, no_element_sheet.nrows):
     if no_element_sheet.cell_value(r, 0) != "Patent":
         title = str(no_element_sheet.cell_value(r, 5))
         print(title)
         abstract = str(no_element_sheet.cell_value(r, 2))
         keywords = str(no_element_sheet.cell_value(r, 6))
-        if title.lower() not in uniques and (containsElement(title) or containsElement(abstract)):
-            '''and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30)'''
-            content = {}
-            content['reference-type'] = no_element_sheet.cell_value(r,0)
-            content['record-number'] = no_element_sheet.cell_value(r, 1)
-            content['abstract'] = abstract
-            content['author'] = no_element_sheet.cell_value(r, 3)
-            content['year'] = no_element_sheet.cell_value(r, 4)
-            content['title'] = title
-            content['keywords'] = keywords
-            content['journal'] = no_element_sheet.cell_value(r, 7)
-            content['label'] = no_element_sheet.cell_value(r, 8)
-            content['lanl-style'] = no_element_sheet.cell_value(r, 9)
-            content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
-            tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
-            content['+10'] = tempo
-            tempo = {'title':allTerms(good_terms, title), 'abstract':allTerms(good_terms, abstract), 'keywords':allTerms(good_terms, keywords)}
-            content['+3'] = tempo
-            tempo = {'title':allTerms(margin_good_terms, title), 'abstract':allTerms(margin_good_terms, abstract), 'keywords':allTerms(margin_good_terms, keywords)}
-            content['+1'] = tempo
-            tempo = {'title':allTerms(neutral_terms, title), 'abstract':allTerms(neutral_terms, abstract), 'keywords':allTerms(neutral_terms, keywords)}
-            content['+0'] = tempo
-            tempo = {'title':allTerms(margin_bad_terms, title), 'abstract':allTerms(margin_bad_terms, abstract), 'keywords':allTerms(margin_bad_terms, keywords)}
-            content['-1'] = tempo
-            tempo = {'title':allTerms(bad_terms, title), 'abstract':allTerms(bad_terms, abstract), 'keywords':allTerms(bad_terms, keywords)}
-            content['-3'] = tempo
-            tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
-            content['-10'] = tempo
-            uniques[title.lower()] = content
-        
-
+        if title.lower() not in uniques:
+            if not (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30):
+                content = {}
+                content['reference-type'] = no_element_sheet.cell_value(r,0)
+                content['record-number'] = no_element_sheet.cell_value(r, 1)
+                content['abstract'] = abstract
+                content['author'] = no_element_sheet.cell_value(r, 3)
+                content['year'] = no_element_sheet.cell_value(r, 4)
+                content['title'] = title
+                content['keywords'] = keywords
+                content['journal'] = no_element_sheet.cell_value(r, 7)
+                content['label'] = no_element_sheet.cell_value(r, 8)
+                content['lanl-style'] = no_element_sheet.cell_value(r, 9)
+                content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
+                tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
+                content['+10'] = tempo
+                tempo = {'title':allTerms(good_terms, title), 'abstract':allTerms(good_terms, abstract), 'keywords':allTerms(good_terms, keywords)}
+                content['+3'] = tempo
+                tempo = {'title':allTerms(margin_good_terms, title), 'abstract':allTerms(margin_good_terms, abstract), 'keywords':allTerms(margin_good_terms, keywords)}
+                content['+1'] = tempo
+                tempo = {'title':allTerms(neutral_terms, title), 'abstract':allTerms(neutral_terms, abstract), 'keywords':allTerms(neutral_terms, keywords)}
+                content['+0'] = tempo
+                tempo = {'title':allTerms(margin_bad_terms, title), 'abstract':allTerms(margin_bad_terms, abstract), 'keywords':allTerms(margin_bad_terms, keywords)}
+                content['-1'] = tempo
+                tempo = {'title':allTerms(bad_terms, title), 'abstract':allTerms(bad_terms, abstract), 'keywords':allTerms(bad_terms, keywords)}
+                content['-3'] = tempo
+                tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
+                content['-10'] = tempo
+                tempo = list(findBaseAlloy(title).keys()) + list(findBaseAlloy(abstract).keys()) + list(findBaseAlloy(keywords).keys())
+                tempo += list(findAlloyNames(title).keys()) + list(findAlloyNames(abstract).keys()) + list(findAlloyNames(keywords).keys())
+                tempo_str = ""
+                for t in tempo:
+                    tempo_str += (";" if tempo_str else "") + t
+                content['Base'] = tempo_str
+                title_ba = findBaseAlloy(title)
+                abstract_ba = findBaseAlloy(abstract)
+                keywords_ba = findBaseAlloy(keywords)
+                title_an = findAlloyNames(title)
+                abstract_an = findAlloyNames(abstract)
+                keywords_an = findAlloyNames(keywords)
+                tempo_str = ""
+                for t in tempo:
+                    total_list = list(set((title_ba[t] if t in title_ba else []) + (abstract_ba[t] if t in abstract_ba else []) + (keywords_ba[t] if t in keywords_ba else [])))
+                    total_list += list(set((title_an[t][0] if t in title_an else []) + (abstract_an[t][0] if t in abstract_an else []) + (keywords_an[t][0] if t in keywords_an else [])))
+                    tempo_str += (";" if tempo_str else "")
+                    mini_str = ""
+                    for elem in total_list:
+                        mini_str += ("," if mini_str else "") + elem
+                    tempo_str += mini_str
+                content['Alloy'] = tempo_str
+                content['Alloy Names'] = ""
+                for name in title_an:
+                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                for name in abstract_an:
+                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                for name in keywords_an:
+                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                uniques[title.lower()] = content
+        else:
+            repeat_cnt += 1       
 del no_element
 fil_sheet.write(0, 0, "Reference Type")
 fil_sheet.write(0, 1, "Record Number")
@@ -283,4 +344,6 @@ for i in uniques:
     fil_sheet.write(row, 16, str(uniques[i]['-3']))
     fil_sheet.write(row, 17, str(uniques[i]['-10']))
     row += 1
+
+fil_sheet.write(row, 0, str(repeat_cnt))
 filtered.close()

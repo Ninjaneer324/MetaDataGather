@@ -7,6 +7,8 @@ import time
 def is_all_caps(s):
     return all(char.isupper() for char in s)
 
+
+
 periodic_table = {}
 periodic_wb = xlrd.open_workbook("Periodic-Table.xlsx")
 sheet = periodic_wb.sheet_by_index(0)
@@ -106,7 +108,6 @@ for r in range(start, fil_sheet.nrows):
         print("Named alloys found")
         counted = True
         for p in alloy_names_temp:
-            
                 periodic_array[p[0] - 1][p[1] - 1] = periodic_array[p[0] - 1][p[1] - 1] + (";" if periodic_array[p[0] - 1][p[1] - 1] else "") +str(year)+author
             
     for b in periodic_table:       
