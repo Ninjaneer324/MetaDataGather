@@ -277,7 +277,7 @@ for r in range(1, no_element_sheet.nrows):
                 tempo_str = ""
                 for t in tempo:
                     tempo_str += (";" if tempo_str else "") + t
-                content['Base'] = tempo_str
+                content['base'] = tempo_str
                 title_ba = findBaseAlloy(title)
                 abstract_ba = findBaseAlloy(abstract)
                 keywords_ba = findBaseAlloy(keywords)
@@ -293,14 +293,14 @@ for r in range(1, no_element_sheet.nrows):
                     for elem in total_list:
                         mini_str += ("," if mini_str else "") + elem
                     tempo_str += mini_str
-                content['Alloy'] = tempo_str
-                content['Alloy Names'] = ""
+                content['alloy'] = tempo_str
+                content['alloy-names'] = ""
                 for name in title_an:
-                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
                 for name in abstract_an:
-                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
                 for name in keywords_an:
-                    content['Alloy Names'] += ("," if content['Alloy Names'] else "") + name
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
                 uniques[title.lower()] = content
         else:
             repeat_cnt += 1       
@@ -323,6 +323,9 @@ fil_sheet.write(0, 14, "+0")
 fil_sheet.write(0, 15, "-1")
 fil_sheet.write(0, 16, "-3")
 fil_sheet.write(0, 17, "-10")
+fil_sheet.write(0, 18, "Base")
+fil_sheet.write(0, 19, "Alloy")
+fil_sheet.write(0, 20, "Alloy Names")
 row = 1
 for i in uniques:
     fil_sheet.write(row, 0, uniques[i]['reference-type'])
@@ -343,6 +346,9 @@ for i in uniques:
     fil_sheet.write(row, 15, str(uniques[i]['-1']))
     fil_sheet.write(row, 16, str(uniques[i]['-3']))
     fil_sheet.write(row, 17, str(uniques[i]['-10']))
+    fil_sheet.write(row, 18, str(uniques[i]['base']))
+    fil_sheet.write(row, 19, str(uniques[i]['alloy']))
+    fil_sheet.write(row, 20, str(uniques[i]['alloy-names']))
     row += 1
 
 fil_sheet.write(row, 0, str(repeat_cnt))
