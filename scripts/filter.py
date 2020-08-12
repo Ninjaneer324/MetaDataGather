@@ -8,9 +8,9 @@ from re import search
 from re import findall
 from urllib.parse import unquote
 
-no_element = xlrd.open_workbook("WOSMasterList.xlsx")
+no_element = xlrd.open_workbook("CompendexMasterListv3.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
-filtered = xlsxwriter.Workbook("WOSMasterListexcludedv1a.xlsx")
+filtered = xlsxwriter.Workbook("CompendexMasterListv4.xlsx")
 fil_sheet = filtered.add_worksheet()
 
 def is_all_caps(s):
