@@ -243,7 +243,7 @@ for r in range(1, no_element_sheet.nrows):
         title = str(no_element_sheet.cell_value(r, 5))
         print(title)
         abstract = str(no_element_sheet.cell_value(r, 2))
-        keywords = str(no_element_sheet.cell_value(r, 6))
+        keywords = str(no_element_sheet.cell_value(r, 9))
         if title.lower() not in uniques:
             if not (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30):
                 content = {}
@@ -254,9 +254,9 @@ for r in range(1, no_element_sheet.nrows):
                 content['year'] = no_element_sheet.cell_value(r, 4)
                 content['title'] = title
                 content['keywords'] = keywords
-                content['journal'] = no_element_sheet.cell_value(r, 7)
-                content['label'] = no_element_sheet.cell_value(r, 8)
-                content['lanl-style'] = no_element_sheet.cell_value(r, 9)
+                content['journal'] = no_element_sheet.cell_value(r, 6)
+                content['label'] = no_element_sheet.cell_value(r, 7)
+                content['lanl-style'] = no_element_sheet.cell_value(r, 8)
                 content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
                 tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
                 content['+10'] = tempo
