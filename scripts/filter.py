@@ -8,9 +8,9 @@ from re import search
 from re import findall
 from urllib.parse import unquote
 
-no_element = xlrd.open_workbook("CompendexMasterListv3.xlsx")
+no_element = xlrd.open_workbook("FirstDataBase01.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
-filtered = xlsxwriter.Workbook("CompendexMasterListv4.xlsx")
+filtered = xlsxwriter.Workbook("CompendexMasterlistv6.xlsx")
 fil_sheet = filtered.add_worksheet()
 
 def is_all_caps(s):
@@ -97,7 +97,7 @@ with open("unpromising_terms.txt", "r") as file:
 periodic_table = {}
 periodic_wb = xlrd.open_workbook("Periodic-Table.xlsx")
 sheet = periodic_wb.sheet_by_index(0)
-for i in range(1, 104):
+for i in range(1, 107):
     contents = {}
     contents['symbol'] = sheet.cell_value(i, 2)
     contents['pos'] = i
@@ -237,15 +237,17 @@ def totalScore(input_str=""):
     return score
 
 uniques = {}
+not_included = {}
 repeat_cnt = 0
+start = 1
 for r in range(1, no_element_sheet.nrows):
     if no_element_sheet.cell_value(r, 0) != "Patent":
         title = str(no_element_sheet.cell_value(r, 5))
         print(title)
         abstract = str(no_element_sheet.cell_value(r, 2))
-        keywords = str(no_element_sheet.cell_value(r, 9))
+        keywords = str(no_element_sheet.cell_value(r, 6))
         if title.lower() not in uniques:
-            if not (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) > 30):
+            if (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) >= 30):
                 content = {}
                 content['reference-type'] = no_element_sheet.cell_value(r,0)
                 content['record-number'] = no_element_sheet.cell_value(r, 1)
@@ -254,9 +256,9 @@ for r in range(1, no_element_sheet.nrows):
                 content['year'] = no_element_sheet.cell_value(r, 4)
                 content['title'] = title
                 content['keywords'] = keywords
-                content['journal'] = no_element_sheet.cell_value(r, 6)
-                content['label'] = no_element_sheet.cell_value(r, 7)
-                content['lanl-style'] = no_element_sheet.cell_value(r, 8)
+                content['journal'] = no_element_sheet.cell_value(r, 7)
+                content['label'] = no_element_sheet.cell_value(r, 8)
+                content['lanl-style'] = no_element_sheet.cell_value(r, 9)
                 content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
                 tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
                 content['+10'] = tempo
@@ -272,8 +274,9 @@ for r in range(1, no_element_sheet.nrows):
                 content['-3'] = tempo
                 tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
                 content['-10'] = tempo
-                tempo = list(findBaseAlloy(title).keys()) + list(findBaseAlloy(abstract).keys()) + list(findBaseAlloy(keywords).keys())
+                '''tempo = list(findBaseAlloy(title).keys()) + list(findBaseAlloy(abstract).keys()) + list(findBaseAlloy(keywords).keys())
                 tempo += list(findAlloyNames(title).keys()) + list(findAlloyNames(abstract).keys()) + list(findAlloyNames(keywords).keys())
+                tempo = list(set(tempo))
                 tempo_str = ""
                 for t in tempo:
                     tempo_str += (";" if tempo_str else "") + t
@@ -295,15 +298,13 @@ for r in range(1, no_element_sheet.nrows):
                     tempo_str += mini_str
                 content['alloy'] = tempo_str
                 content['alloy-names'] = ""
-                for name in title_an:
-                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
-                for name in abstract_an:
-                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
-                for name in keywords_an:
-                    content['alloy-names'] += ("," if content['alloy-names'] else "") + name
-                uniques[title.lower()] = content
-        else:
-            repeat_cnt += 1       
+                for name in findAlloyNames(title).values():
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + str(name[1])
+                for name in findAlloyNames(abstract).values():
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + str(name[1])
+                for name in findAlloyNames(keywords).values():
+                    content['alloy-names'] += ("," if content['alloy-names'] else "") + str(name[1])'''
+                uniques[title.lower()] = content      
 del no_element
 fil_sheet.write(0, 0, "Reference Type")
 fil_sheet.write(0, 1, "Record Number")
@@ -323,9 +324,9 @@ fil_sheet.write(0, 14, "+0")
 fil_sheet.write(0, 15, "-1")
 fil_sheet.write(0, 16, "-3")
 fil_sheet.write(0, 17, "-10")
-fil_sheet.write(0, 18, "Base")
+'''fil_sheet.write(0, 18, "Base")
 fil_sheet.write(0, 19, "Alloy")
-fil_sheet.write(0, 20, "Alloy Names")
+fil_sheet.write(0, 20, "Alloy Names")'''
 row = 1
 for i in uniques:
     fil_sheet.write(row, 0, uniques[i]['reference-type'])
@@ -346,10 +347,8 @@ for i in uniques:
     fil_sheet.write(row, 15, str(uniques[i]['-1']))
     fil_sheet.write(row, 16, str(uniques[i]['-3']))
     fil_sheet.write(row, 17, str(uniques[i]['-10']))
-    fil_sheet.write(row, 18, str(uniques[i]['base']))
+    '''fil_sheet.write(row, 18, str(uniques[i]['base']))
     fil_sheet.write(row, 19, str(uniques[i]['alloy']))
-    fil_sheet.write(row, 20, str(uniques[i]['alloy-names']))
+    fil_sheet.write(row, 20, str(uniques[i]['alloy-names']))'''
     row += 1
-
-fil_sheet.write(row, 0, str(repeat_cnt))
 filtered.close()

@@ -19,6 +19,8 @@ for i in range(1, 107):
     periodic_table[sheet.cell_value(i, 1)] = contents
 
 nxn_table = xlsxwriter.Workbook('FinalProduct.xlsx')
+extras = xlsxwriter.Workbook('Extras.xlsx')
+e_sheet = extras.add_worksheet()
 worksheet = nxn_table.add_worksheet()
 for i in range(1, 107):
     stuff = sheet.cell_value(i, 2)
@@ -86,36 +88,55 @@ def checkAlloyNames(input_str):
                     for j in alloying:
                         pairs.append([periodic_table[base]['pos'], periodic_table[j]['pos']])
     return pairs
-unadded = []
+unadded = {}
 
 periodic_array = [["" for i in range(106)] for j in range(106)]
 
-filtered = xlrd.open_workbook('FirstDataBase02v2.xlsx')
+filtered = xlrd.open_workbook('CompendexMasterlistv6.xlsx')
 fil_sheet = filtered.sheet_by_index(0)
 start = 1
-records_counted = []
+
 for r in range(start, fil_sheet.nrows):
-    counted = False
     title = fil_sheet.cell_value(r, 4)
     abstract = fil_sheet.cell_value(r, 5)
     keywords = fil_sheet.cell_value(r, 6)
     checks = [title, abstract, keywords]
+    print(fil_sheet.cell_value(r, 2))
     year = int(fil_sheet.cell_value(r, 2))
     author_f = fil_sheet.cell_value(r, 3)
     author = author_f[0:author_f.find(",")].strip().lower()
     alloy_names_temp = checkAlloyNames(title) + checkAlloyNames(abstract) + checkAlloyNames(keywords)
     if alloy_names_temp:
-        print("Named alloys found")
-        counted = True
+        print(r,"found alloys")
         for p in alloy_names_temp:
                 periodic_array[p[0] - 1][p[1] - 1] = periodic_array[p[0] - 1][p[1] - 1] + (";" if periodic_array[p[0] - 1][p[1] - 1] else "") +str(year)+author
-            
-    for b in periodic_table:       
+    else:
+        content = {}
+        content['reference-type'] = fil_sheet.cell_value(r,0)
+        content['record-number'] = str(fil_sheet.cell_value(r, 1))
+        content['year'] = str(fil_sheet.cell_value(r, 2))
+        content['author'] = fil_sheet.cell_value(r, 3)
+        content['title'] = fil_sheet.cell_value(r, 4)
+        content['abstract'] = fil_sheet.cell_value(r, 5)
+        content['keywords'] = fil_sheet.cell_value(r, 6)
+        content['journal'] = fil_sheet.cell_value(r, 7)
+        content['label'] = fil_sheet.cell_value(r, 8)
+        content['lanl-style'] = fil_sheet.cell_value(r, 9)
+        content['score'] = str(fil_sheet.cell_value(r, 10))
+        content['+10'] = str(fil_sheet.cell_value(r, 11))
+        content['+3'] = str(fil_sheet.cell_value(r, 12))
+        content['+1'] = str(fil_sheet.cell_value(r, 13))
+        content['+0'] = str(fil_sheet.cell_value(r, 14))
+        content['-1'] = str(fil_sheet.cell_value(r, 15))
+        content['-3'] = str(fil_sheet.cell_value(r, 16))
+        content['-10'] = str(fil_sheet.cell_value(r, 17))
+        unadded[content['title'].lower()] = content       
+    '''for b in periodic_table:       
         if checkPure(title, b) or checkPure(abstract, b) or checkPure(keywords, b):
                 counted = True
                 pos = periodic_table[b]['pos']
                 periodic_array[pos - 1][pos - 1] = periodic_array[pos - 1][pos - 1] + (";" if periodic_array[pos - 1][pos - 1] else "") +str(year)+author
-        '''if checkDashNotation(title, b, a) or checkDashNotation(abstract, b, a) or checkDashNotation(keywords, b, a):
+        if checkDashNotation(title, b, a) or checkDashNotation(abstract, b, a) or checkDashNotation(keywords, b, a):
             print(fil_sheet.cell_value(r, 1))
             print("checkDashNotation")
             pos_b = periodic_table[b]['pos']
@@ -129,9 +150,6 @@ for r in range(start, fil_sheet.nrows):
             pos_a = periodic_table[a]['pos']
             periodic_array[pos_b - 1][pos_a - 1] = periodic_array[pos_b - 1][pos_a - 1] + (";" if periodic_array[pos_b - 1][pos_a - 1] else "") +str(year)+author
             worksheet.write(pos_b, pos_a, str(year)+author)'''
-    if counted:
-        records_counted.append(int(fil_sheet.cell_value(r, 1)))
-print("Left:", fil_sheet.nrows - len(records_counted) - 1)
 
 '''for r in range(1, fil_sheet.nrows):
     if int(fil_sheet.cell_value(r, 1)) not in records_counted:
@@ -156,5 +174,46 @@ for base in range(len(periodic_array)):
     for alloy in range(len(periodic_array[base])):
         worksheet.write(base + 1, alloy + 1, periodic_array[base][alloy])
 
+row = 0
+e_sheet.write(row, 0, "Reference Type")
+e_sheet.write(row, 1, "Record Number")
+e_sheet.write(row, 2, "Year")
+e_sheet.write(row, 3, "Author")
+e_sheet.write(row, 4, "Title")
+e_sheet.write(row, 5, "Abstract")
+e_sheet.write(row, 6, "Keywords")
+e_sheet.write(row, 7, "Journal")
+e_sheet.write(row, 8, "Label")
+e_sheet.write(row, 9, "LANL Style")
+e_sheet.write(row, 10, "Score")
+e_sheet.write(row, 11, "+10")
+e_sheet.write(row, 12, "+3")
+e_sheet.write(row, 13, "+1")
+e_sheet.write(row, 14, "+0")
+e_sheet.write(row, 15, "-1")
+e_sheet.write(row, 16, "-3")
+e_sheet.write(row, 17, "-10")
+row += 1
+for e in unadded:
+    e_sheet.write(row, 0, unadded[e]['reference-type'])
+    e_sheet.write(row, 1, unadded[e]['record-number'])
+    e_sheet.write(row, 2, unadded[e]['year'])
+    e_sheet.write(row, 3, unadded[e]['author'])
+    e_sheet.write(row, 4, unadded[e]['title'])
+    e_sheet.write(row, 5, unadded[e]['abstract'])
+    e_sheet.write(row, 6, unadded[e]['keywords'])
+    e_sheet.write(row, 7, unadded[e]['journal'])
+    e_sheet.write(row, 8, unadded[e]['label'])
+    e_sheet.write(row, 9, unadded[e]['lanl-style'])
+    e_sheet.write(row, 10, unadded[e]['score'])
+    e_sheet.write(row, 11, str(unadded[e]['+10']))
+    e_sheet.write(row, 12, str(unadded[e]['+3']))
+    e_sheet.write(row, 13, str(unadded[e]['+1']))
+    e_sheet.write(row, 14, str(unadded[e]['+0']))
+    e_sheet.write(row, 15, str(unadded[e]['-1']))
+    e_sheet.write(row, 16, str(unadded[e]['-3']))
+    e_sheet.write(row, 17, str(unadded[e]['-10']))
+    row += 1
 del filtered
 nxn_table.close()
+extras.close()
