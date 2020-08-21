@@ -1,0 +1,79 @@
+composite
+composites
+graphit*
+*deposit
+*epoxy*
+*XAFS
+atomic force microscop*
+cermet*
+CNT
+combustion*
+DFT
+dielectric*
+graphene*
+*laminat*
+machine*learn*
+molecular dynamics
+nanotube*
+neural*network*
+particulate*
+phase field
+porous
+Raman
+semisolid
+semi-solid
+sinter*
+sliding
+sputter*
+fatigue*
+strain rate*
+wear
+woven
+*hydrate*
+acoustic*
+adhes*
+bauschinger
+blast furnace
+bond*
+cable*
+CMOS
+concrete*
+cutting
+earthquake*
+elastic.perfect*
+elasto.plastic
+feedback
+fluid*
+gel*
+granulat*
+hydraulic*
+implant*
+ladle*
+lubrica*
+machinabil*
+microfluid*
+mortar*
+MOSFET
+nodal
+node
+ore*
+petro*
+piezo*
+resistance*
+roast*
+runtime
+sand*
+self-assembl*
+semisolid, semi-solid
+slag
+specif*
+strain aged
+strain ageing
+strain aging
+surfactant*
+synthetic*
+thixo*
+antiferro*
+viscosit*
+insulator
+insulate

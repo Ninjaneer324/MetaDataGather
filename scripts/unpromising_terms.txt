@@ -1,0 +1,23 @@
+*polymer*
+electrical aging
+plastics
+rubber*
+textile*
+agent
+aramid*
+cellulos*
+coal
+elastomer*
+nylon*
+pulp*
+resin
+RTV
+sludge*
+vulcaniz*
+yarn*
+electrolyte
+trivalent
+asphalt
+viscoelastic*
+battery
+batteries
