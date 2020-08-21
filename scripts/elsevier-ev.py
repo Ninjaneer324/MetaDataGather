@@ -5,10 +5,10 @@ import time
 from urllib.parse import unquote
 from math import ceil
 #api key for authentication
-apiKey = "bbcd5fe7831eb12082993dcbaaa6d72c"
+apiKey = ""
 #or is it the insttoken?
 #API Documentation for Engineering Village search: https://dev.elsevier.com/documentation/EngineeringVillageAPI.wadl
-inst_token = "4f3d2a4d46c51cbb68e83cf0b7150f45"
+inst_token = ""
 #endpoint for search
 headers = {"Accept":"application/json","X-ELS-APIKey":apiKey, "X-ELS-Insttoken":inst_token}
 url = "https://api.elsevier.com/content/ev/results"
