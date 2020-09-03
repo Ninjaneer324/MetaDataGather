@@ -8,7 +8,7 @@ from re import search
 from re import findall
 from urllib.parse import unquote
 
-no_element = xlrd.open_workbook("FirstDataBase01.xlsx")
+no_element = xlrd.open_workbook("CompendexMasterlistv1.xlsx")
 no_element_sheet = no_element.sheet_by_index(0)
 filtered = xlsxwriter.Workbook("CompendexMasterlistv6.xlsx")
 fil_sheet = filtered.add_worksheet()
@@ -237,6 +237,7 @@ def totalScore(input_str=""):
     return score
 
 uniques = {}
+unique_labels = {}
 not_included = {}
 repeat_cnt = 0
 start = 1
@@ -245,19 +246,26 @@ for r in range(1, no_element_sheet.nrows):
         title = str(no_element_sheet.cell_value(r, 5))
         print(title)
         abstract = str(no_element_sheet.cell_value(r, 2))
-        keywords = str(no_element_sheet.cell_value(r, 6))
+        keywords = str(no_element_sheet.cell_value(r, 7))
         if title.lower() not in uniques:
             if (containsElement(title) or containsElement(abstract)) and (totalScore(title) + totalScore(abstract) +totalScore(keywords) >= 30):
                 content = {}
                 content['reference-type'] = no_element_sheet.cell_value(r,0)
                 content['record-number'] = no_element_sheet.cell_value(r, 1)
                 content['abstract'] = abstract
+                author = no_element_sheet.cell_value(r, 3)
                 content['author'] = no_element_sheet.cell_value(r, 3)
+                year = no_element_sheet.cell_value(r, 4)
                 content['year'] = no_element_sheet.cell_value(r, 4)
                 content['title'] = title
                 content['keywords'] = keywords
-                content['journal'] = no_element_sheet.cell_value(r, 7)
-                content['label'] = no_element_sheet.cell_value(r, 8)
+                content['journal'] = no_element_sheet.cell_value(r, 6)
+                l = str(int(year)) + author[0:3].lower()
+                if l not in unique_labels:
+                    unique_labels[l] = 1
+                else:
+                    unique_labels[l] += 1
+                content['label'] = l + str(unique_labels[l])
                 content['lanl-style'] = no_element_sheet.cell_value(r, 9)
                 content['score'] = totalScore(title) + totalScore(abstract) +totalScore(keywords)
                 tempo = {'title':allTerms(best_terms, title), 'abstract':allTerms(best_terms, abstract), 'keywords':allTerms(best_terms, keywords)}
@@ -274,6 +282,7 @@ for r in range(1, no_element_sheet.nrows):
                 content['-3'] = tempo
                 tempo = {'title':allTerms(unpromising_terms, title), 'abstract':allTerms(unpromising_terms, abstract), 'keywords':allTerms(unpromising_terms, keywords)}
                 content['-10'] = tempo
+                content['doi'] = no_element_sheet.cell_value(r, 10)
                 '''tempo = list(findBaseAlloy(title).keys()) + list(findBaseAlloy(abstract).keys()) + list(findBaseAlloy(keywords).keys())
                 tempo += list(findAlloyNames(title).keys()) + list(findAlloyNames(abstract).keys()) + list(findAlloyNames(keywords).keys())
                 tempo = list(set(tempo))
@@ -316,14 +325,15 @@ fil_sheet.write(0, 6, "Keywords")
 fil_sheet.write(0, 7, "Journal")
 fil_sheet.write(0, 8, "Label")
 fil_sheet.write(0, 9, "LANL Style")
-fil_sheet.write(0, 10, "Score")
-fil_sheet.write(0, 11, "+10")
-fil_sheet.write(0, 12, "+3")
-fil_sheet.write(0, 13, "+1")
-fil_sheet.write(0, 14, "+0")
-fil_sheet.write(0, 15, "-1")
-fil_sheet.write(0, 16, "-3")
-fil_sheet.write(0, 17, "-10")
+fil_sheet.write(0, 10, "DOI")
+fil_sheet.write(0, 11, "Score")
+fil_sheet.write(0, 12, "+10")
+fil_sheet.write(0, 13, "+3")
+fil_sheet.write(0, 14, "+1")
+fil_sheet.write(0, 15, "+0")
+fil_sheet.write(0, 16, "-1")
+fil_sheet.write(0, 17, "-3")
+fil_sheet.write(0, 18, "-10")
 '''fil_sheet.write(0, 18, "Base")
 fil_sheet.write(0, 19, "Alloy")
 fil_sheet.write(0, 20, "Alloy Names")'''
@@ -339,14 +349,15 @@ for i in uniques:
     fil_sheet.write(row, 7, uniques[i]['journal'])
     fil_sheet.write(row, 8, uniques[i]['label'])
     fil_sheet.write(row, 9, uniques[i]['lanl-style'])
-    fil_sheet.write(row, 10, uniques[i]['score'])
-    fil_sheet.write(row, 11, str(uniques[i]['+10']))
-    fil_sheet.write(row, 12, str(uniques[i]['+3']))
-    fil_sheet.write(row, 13, str(uniques[i]['+1']))
-    fil_sheet.write(row, 14, str(uniques[i]['+0']))
-    fil_sheet.write(row, 15, str(uniques[i]['-1']))
-    fil_sheet.write(row, 16, str(uniques[i]['-3']))
-    fil_sheet.write(row, 17, str(uniques[i]['-10']))
+    fil_sheet.write(row, 10, uniques[i]['doi'])
+    fil_sheet.write(row, 11, uniques[i]['score'])
+    fil_sheet.write(row, 12, str(uniques[i]['+10']))
+    fil_sheet.write(row, 13, str(uniques[i]['+3']))
+    fil_sheet.write(row, 14, str(uniques[i]['+1']))
+    fil_sheet.write(row, 15, str(uniques[i]['+0']))
+    fil_sheet.write(row, 16, str(uniques[i]['-1']))
+    fil_sheet.write(row, 17, str(uniques[i]['-3']))
+    fil_sheet.write(row, 18, str(uniques[i]['-10']))
     '''fil_sheet.write(row, 18, str(uniques[i]['base']))
     fil_sheet.write(row, 19, str(uniques[i]['alloy']))
     fil_sheet.write(row, 20, str(uniques[i]['alloy-names']))'''
